@@ -1,0 +1,94 @@
+% https://github.com/martinhelso/phduio-monograph
+
+% Add [final] to remove marginal notes,
+% remove [colophon] for a blank colophon page:
+\documentclass[final, nocolophon, english, oneside, screen]{phduio}
+
+\usepackage{phdstyle}   % Custom style
+
+\usepackage{wrapfig}
+
+\usepackage{longtable}
+
+\usepackage{arydshln}
+
+\let\printglossary\relax
+\let\theglossary\relax
+\let\endtheglossary\relax
+\usepackage[acronym, toc, nohypertypes={acronym}]{glossaries}
+\makeglossaries
+\input{glossary.tex}
+
+
+\author{Jokke Mats Jansen}
+\title{Master's Thesis proposal}
+%\subtitle{Optional Subtitle}
+\department{Artificial Intelligence}
+\faculty{Faculty of Science}
+\affiliation
+{
+    \textbf{Supervisors}
+    \and
+    \makebox[.16\linewidth][l]{First:} Dr. Shihan Wang
+    \and
+    \makebox[.16\linewidth][l]{Second:} Dr. Leendert van Maanen
+}
+
+
+\includeonly
+{
+    % sections/dedication,
+    % sections/abstract,
+    % sections/preface,
+    sections/introduction,
+    sections/problem,
+    sections/algorithm,
+    sections/literature,
+    sections/experiment,
+    sections/plan,
+}
+
+\begin{document}
+
+    \frontmatter        % Folios in Roman numerals, unnumbered chapters.
+
+    \uiotitle
+
+    % \include{sections/dedication}
+    % \include{sections/abstract}
+    % \include{sections/preface}
+
+    % \cleartorecto
+    \microtypesetup{protrusion = false}
+    \tableofcontents*    % Or \tableofcontents*
+    % \cleartorecto
+    % \listoffigures      % Or \listoffigures*
+    % \cleartorecto
+    % \listoftables       % Or \listoftables*
+    \microtypesetup{protrusion = true}
+    
+    \clearpage
+    \printglossary[type=\acronymtype]
+    
+    \mainmatter         % Folios in Arabic numerals, numbered chapters.
+
+    \include{sections/introduction}
+
+    % \part{The First Part}
+    
+    \include{sections/problem}
+    \include{sections/algorithm}
+    \include{sections/literature}
+    \include{sections/experiment}
+    \include{sections/plan}
+
+    % \appendix           % "Chapter" is renamed "Appendix"
+    % \appendixpage       % Similar to \part*{Appendices}, but appears in TOC
+
+    % \include{sections/appendixA}
+
+    \backmatter         % Folios in Arabic numerals, unnumbered chapters.
+
+    \printbibliography
+
+\end{document}
