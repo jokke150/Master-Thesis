@@ -93,36 +93,43 @@ Track position (vertical)  & [$0$,$200$] (m) & Vector of 5 range finder sensors 
 Driver steering (last time step) & [$-1$, $+1$]  & The agent perceives the last input of the human. This is not the action of the human in the next but in the last time step. The agent does not know which action the human is going to choose simultaneous to its own action. $-1$ means full right (159 degrees) and $+1$ means full left (21 degrees).  \\ \bottomrule
 \end{tabularx}
 
-\section{Reward}
+\newpage
+\section*{Reward}
 
-The overall goal for the agent is to only assist the driver in keeping the car centered in its lane. Therefore, this is the main source of reward for the agent. The more centered the car is at a certain time step, the more reward $r$ is received. However, the agent is supposed to leave the human driver with as much autonomy as possible. Thus, any intervention by the agent is penalized. The general assumption is that an attentive driver performs better in keeping the car centered than an inattentive driver. It follows that an attentive driver is less likely to diverge strongly from the lane center. For this reason, the penalty intensity is linked to the current distance of the car to the lane center; the higher the distance, the lower the agent's intervention penalty. On the other hand, minor smooth interventions are generally preferred over large abrupt steering actions. Accordingly, the penalty is also dependent on the intensity of the agent's action. Lastly, the car is never supposed to leave the lane. Consequently, leaving the lane is highly penalized.
+The overall goal for the agent is to only assist the driver in keeping the car centered in its lane. Therefore, this is the main source of reward for the agent. The more centered the car is at a certain time step, the more reward $r$ is received. However, the agent is supposed to leave the human driver with as much autonomy as possible. Thus, any intervention by the agent is penalized. Minor smooth interventions are generally preferred over large abrupt steering actions. Accordingly, the penalty is (exponentially) dependent on the intensity of the agent's action. The general assumption is that an attentive driver performs better in keeping the car centered than an inattentive driver. The agent has to predict whether a driver is attentive or not in order to choose its actions correctly. An incorrect prediction of the driver's actions will lead to overshooting and thus be negatively reflected in the reward for keeping the car centered. Lastly, the car is never supposed to leave the lane. Consequently, leaving the lane is highly penalized.
+
+
+%For this reason, the penalty intensity is linked to the current distance of the car to the lane center; the higher the distance, the lower the agent's intervention penalty. On the other hand, 
 
 % TODO: Add smoothing?
 
-\begin{equation}
-    \mathcal{R} = \mathcal{R}_{\textrm{center}} - \mathcal{P}_{\textrm{act position}} - \mathcal{P}_{\textrm{act intensity}} - \mathcal{P}_{\textrm{off-lane}}
-\end{equation}
-\begin{equation}
+% \begin{equation}
+%     \mathcal{R} = \mathcal{R}_{\textrm{center}} - \mathcal{P}_{\textrm{act position}} - \mathcal{P}_{\textrm{act intensity}} - \mathcal{P}_{\textrm{off-lane}}
+% \end{equation}
+\begin{equation*}
+    \mathcal{R} = \mathcal{R}_{\textrm{center}} - \mathcal{P}_{\textrm{act intensity}} - \mathcal{P}_{\textrm{off-lane}}
+\end{equation*}
+\begin{equation*}
     \mathcal{R}_{\textrm{center}} = 
     \begin{cases}
         r - r * |Pos_{hor}| & \text{if} \quad |Pos_{hor}| \leq 1 \\
         0 & \text{if} \quad \text{off-lane}
     \end{cases}
-\end{equation}
-\begin{equation}
-    \mathcal{P}_{\textrm{act position}} = 
-    \begin{cases}
-        p_{\textrm{pos}} - p_{\textrm{pos}} * |Pos_{hor}| & \text{if} \quad |Pos_{hor}| \leq 1 \text{ and } \mathcal{A}_{\textrm{steer}}^{\textrm{agent}} \neq 0 \\
-        0 & \text{if} \quad \text{off-lane or no steering action}
-    \end{cases}
-\end{equation}
-\begin{equation}
-    \mathcal{P}_{\textrm{act intensity}} = p_{\textrm{int}} * |\mathcal{A}_{\textrm{steer}}^{\textrm{agent}}|
-\end{equation}
-\begin{equation}
+\end{equation*}
+% \begin{equation}
+%     \mathcal{P}_{\textrm{act position}} = 
+%     \begin{cases}
+%         p_{\textrm{pos}} - p_{\textrm{pos}} * |Pos_{hor}| & \text{if} \quad |Pos_{hor}| \leq 1 \text{ and } \mathcal{A}_{\textrm{steer}}^{\textrm{agent}} \neq 0 \\
+%         0 & \text{if} \quad \text{off-lane or no steering action}
+%     \end{cases}
+% \end{equation}
+\begin{equation*}
+    \mathcal{P}_{\textrm{act intensity}} = |\mathcal{A}_{\textrm{steer}}| ^ {p_{\textrm{int}}}
+\end{equation*}
+\begin{equation*}
     \mathcal{P}_{\textrm{off-lane}} = 
     \begin{cases}
         p_{\textrm{off}} & \text{if} \quad |Pos_{hor}| > 1 \\
         0 & \text{if} \quad |Pos_{hor}| \leq 1
     \end{cases}
-\end{equation}
+\end{equation*}
