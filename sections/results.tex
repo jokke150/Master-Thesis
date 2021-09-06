@@ -1,0 +1,133 @@
+\chapter{Results}
+\label{ch:results}
+
+\section{Hyperparameter optimization}
+
+\section{Convergence behavior}
+
+% USE NUMBER OF SEARCHES INSTEAD OF SIMULATIONS
+
+\begin{tikzpicture}
+\begin{axis}[
+    width=\linewidth,
+    height=8cm,
+    %   xmin=0,
+    %   xmax=600,
+    xlabel={Number of searches},
+    xtick={10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
+    xticklabels={10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
+    x tick label style={rotate=60, anchor=east},
+    symbolic x coords= {10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
+    xmajorgrids=true,
+    xminorticks=false,
+    ylabel={Average reward},
+    legend pos=south east,
+    legend style={font=\tiny},
+    error bars/y dir=both, % turn on error bars
+    error bars/y explicit  % say that error value is given explicitly
+]
+% for add_plot: mark repeat=30, mark phase=30
+\addplot [solid, color=blue, mark=square] table [x=Simulations, y=Average Reward, y error=Standard Error, col sep=comma]{data/Simulations - 10 runs - 100 actions - discount horizon 5 - exp const 0.75 mean.csv};
+\addplot [solid, color=purple, mark=star] table [x=Simulations, y=Average Reward, y error=Standard Error, col sep=comma]{data/Over Correct - 10 runs - 1000 actions - discount horizon 5 mean.csv};
+\addplot [solid, color=green, mark=diamond] table [x=Simulations, y=Average Reward, y error=Standard Error, col sep=comma]{data/Over Correct + Noise - 10 runs - 1000 actions - discount horizon 5 mean.csv};
+\addlegendentry{Simulations}
+\addlegendentry{Over Correct}
+\addlegendentry{Over Correct + Noise}
+
+\addplot [name path=upper,draw=none] table [x=Simulations, y expr=\thisrow{Average Reward}+\thisrow{Standard Error}, col sep=comma] {data/Simulations - 10 runs - 100 actions - discount horizon 5 - exp const 0.75 mean.csv};
+\addplot [name path=lower,draw=none] table [x=Simulations, y expr=\thisrow{Average Reward}-\thisrow{Standard Error}, col sep=comma] {data/Simulations - 10 runs - 100 actions - discount horizon 5 - exp const 0.75 mean.csv};
+\addplot [fill=red!10] fill between[of=upper and lower];
+\end{axis}
+\end{tikzpicture}
+
+\begin{figure}
+    \begin{subfigure}{.5\textwidth}
+        \centering
+        \begin{tikzpicture}
+        \begin{axis}[
+            width=\linewidth,
+            height=5cm,
+            label style={font=\tiny},
+            tick label style={font=\tiny},
+            mark size=1.5pt,
+            legend style={font=\tiny},
+            x tick label style={rotate=60, anchor=east},
+            xlabel={Number of searches},
+            xtick={10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
+            xticklabels={10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
+            symbolic x coords= {10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
+            ytick={0, 200, 400, 600, 800, 1000},
+            yticklabels={0, 200, 400, 600, 800, 1000},
+            xmajorgrids=true,
+            xminorticks=false,
+            ylabel={Average reward},
+            legend pos=south east,
+            error bars/y dir=both, % turn on error bars
+            error bars/y explicit  % say that error value is given explicitly
+        ]
+        \addplot [solid, color=blue, mark=square] table [x=Simulations, y=Average Reward, y error=Standard Error, col sep=comma]{data/Simulations - 10 runs - 100 actions - discount horizon 5 - exp const 0.75 mean.csv};
+        \addlegendentry{Simulations}
+        \end{axis}
+        \end{tikzpicture}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \centering
+        \begin{tikzpicture}
+        \begin{axis}[
+            width=\linewidth,
+            height=5cm,
+            label style={font=\tiny},
+            tick label style={font=\tiny},
+            legend style={font=\tiny},
+            x tick label style={rotate=60, anchor=east},
+            xlabel={Number of searches},
+            xtick={10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
+            xticklabels={10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
+            symbolic x coords= {10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
+            ytick={0, 200, 400, 600, 800, 1000},
+            yticklabels={0, 200, 400, 600, 800, 1000},
+            xmajorgrids=true,
+            xminorticks=false,
+            ylabel={Average reward},
+            legend pos=south east,
+            error bars/y dir=both, % turn on error bars
+            error bars/y explicit  % say that error value is given explicitly
+        ]
+        \addplot [solid, color=purple, mark=star] table [x=Simulations, y=Average Reward, y error=Standard Error, col sep=comma]{data/Over Correct - 10 runs - 1000 actions - discount horizon 5 mean.csv};
+        \addlegendentry{Over Correct}
+        \end{axis}
+        \end{tikzpicture}
+    \end{subfigure}\\[2ex]
+    \begin{subfigure}{\textwidth}
+        \centering
+        \begin{tikzpicture}
+        \begin{axis}[
+            width=.5\linewidth,
+            height=5cm,
+            label style={font=\tiny},
+            tick label style={font=\tiny},
+            legend style={font=\tiny},
+            x tick label style={rotate=60, anchor=east},
+            xlabel={Number of searches},
+            xtick={10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
+            xticklabels={10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
+            symbolic x coords= {10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
+            ytick={0, 200, 400, 600, 800, 1000},
+            yticklabels={0, 200, 400, 600, 800, 1000},
+            xmajorgrids=true,
+            xminorticks=false,
+            ylabel={Average reward},
+            legend pos=south east,
+            error bars/y dir=both, % turn on error bars
+            error bars/y explicit  % say that error value is given explicitly
+        ]
+        \addplot [solid, color=green, mark=diamond] table [x=Simulations, y=Average Reward, y error=Standard Error, col sep=comma]{data/Over Correct + Noise - 10 runs - 1000 actions - discount horizon 5 mean.csv};
+        \addlegendentry{Over Correct + Noise}
+        \end{axis}
+        \end{tikzpicture}
+    \end{subfigure}
+    \caption{(a) blah (b) blah (c) blah}
+    \label{fig:foobar}
+\end{figure}
+
+\section{Visualization of driving trajectories}

@@ -1,0 +1,134 @@
+\chapter{Experiment design}
+\label{sec:experiment}
+
+\iffalse
+
+USE DIFFERENT ROADS FOR EVALUATION AND TESTING TO DETERMINE GENERALIZABILITY
+
+Problem: How to transfer to real-world scenario? Attention of driver cannot be incorporated in real-world rewards. Just use policy that  results from simulation?
+
+Idea: Compare attention-estimation approach with a general minimal-intervention approach disregarding the driver's attention level.
+
+
+Intention-Aware Online POMDP Planning for Autonomous Driving in a Crowd
+
+For computational efficiency, we decompose the planningtask into two levels. The high level controls vehicle steering.It builds a cost map, which encodes distributions of static obstacles and pedestrians, and plans a path that minimizesthe expected collision cost. The low level controls vehicle speed along the planned path. It applies online POMDP planning to handle uncertainties in pedestrian intention es-timates, imperfect vehicle control,etc.. This decompositionsubstantially reduces the action space for POMDP planning,while the DESPOT algorithm for POMDP planning is ca-pable of handling large observation spaces. Additionally,the decomposition simplifies system implementation, as itenables independent tests of separate system components.
+
+MODEL BASED - They have a pedestrian model
+
+\fi
+
+\section{Fundamental setup}
+
+% \subsection{Environment}
+
+% Is the agent supposed to act at all when the human is concentrated? Will this be rewarded?
+
+\subsection{Task}
+
+The human driver is simulated with an ACT-R model, driving a car in a simulated driving environment. Initially, the driving task is keeping a car centered on a single-lane road with no other road users at constant velocity. If the agent is able to perform well in this task, increasing the complexity of the scenario is conceivable.\\
+\\
+This can be done by:
+\begin{itemize}[noitemsep]
+    \item Allow changes in velocity
+    \item Introducing a road with multiple lanes, allowing the human to initiate lane changes
+    \item Learning with other road users on the road
+\end{itemize}
+\textcolor{red}{How simple should the initial task be?}\\
+\textcolor{red}{Is the agent supposed to act in any case even though the driver is attentive?}
+
+\subsection{Reward signal modeling}
+
+The overall goal for the agent is to only assist the driver in keeping the car centered in its lane when the driver is inattentive. Two main tasks arise: On the one hand, the agent has to be able to identify if the driver is attentive, and on the other hand, the agent has to actively steer in the right direction if the car deviates from the center of the road when the human driver is inattentive.\\
+\\
+The general reward expectation for the first task of acting only when the driver is inattentive is described as follows:
+\begin{enumerate}[noitemsep]
+    \item \makebox[.3\linewidth][l]{Driver is attentive;}\makebox[.38\linewidth][l]{agent's estimation wrong;} agent action: \\$\rightarrow$ unfavorable (penalty)
+    \item \makebox[.3\linewidth][l]{Driver is attentive;}\makebox[.38\linewidth][l]{agent's estimation correct;} no agent action: \\$\rightarrow$ favorable (reward)
+    \item \makebox[.3\linewidth][l]{Driver inattentive;}\makebox[.38\linewidth][l]{agent's estimation wrong;} no agent action: \\$\rightarrow$ unfavorable (penalty)
+    \item \makebox[.3\linewidth][l]{Driver inattentive;}\makebox[.38\linewidth][l]{agent's estimation correct;} agent action: \\$\rightarrow$ favorable (reward)
+\end{enumerate}
+The general reward expectation for the second task of keeping the car centered is described as follows:
+\begin{enumerate}[noitemsep]
+    \item Car at lane center
+    \begin{itemize}[noitemsep]
+        \item No agent action: \\$\rightarrow$ favorable (reward)
+        \item Agent steers left: \\$\rightarrow$ unfavorable (penalty)
+        \item Agent steers right: \\$\rightarrow$ unfavorable (penalty)
+    \end{itemize}
+    \item Car left of lane center 
+    \begin{itemize}[noitemsep]
+        \item No agent action: \\$\rightarrow$ unfavorable (penalty)
+        \item Agent steers left: \\$\rightarrow$ unfavorable (penalty)
+        \item Agent steers right: \\$\rightarrow$ favorable (reward)
+    \end{itemize}
+    \item Car right of lane center
+    \begin{itemize}[noitemsep]
+        \item No agent action: \\$\rightarrow$ unfavorable (penalty)
+        \item Agent steers left: \\$\rightarrow$ favorable (reward)
+        \item Agent steers right: \\$\rightarrow$ unfavorable (penalty)
+    \end{itemize}
+\end{enumerate}
+
+Either, both tasks could be learned together by defining a single reward function that combines the two reward expectations, or one could use a technique called shaping \parencite{RL_introductio}. Using the shaping method, the Agent is incrementally given increasingly difficult learning problems. In each succeeding problem, the agent's policy learned during the preceding problems leads the agent to encounter rewards more frequently than without an initial policy. Thereby, succeeding problems become easier to learn. In our specific case, this would mean to either let the agent learn how to drive or identify inattentiveness first and then use the resulting policy as initial policy for the combined task.\\
+\\
+\textcolor{red}{Is shaping a good approach? How to split up the problems?}
+
+\iffalse
+
+Reward Modeling:
+The reward function prescribes the desirable driving behavior: safe, efficient, and smooth.
+• If any pedestrian gets within a small distance Dcol of the vehicle, there is a very large penalty Rcol. This is to ensure safety.
+• If the vehicle reaches within a small distance Dgoal of the destination, there is a large reward Rgoal. This is to encourage the vehicle to reach the destination.
+• There is a penalty Rspeed = (v−vmax)/vmax, where v and vmax are the current and the maximum vehicle speed, respectively. This encourages driving at a higher speed when it is safe to do so.
+• Finally, there is is a small penalty Raccel for the actions ACCELERATE and DECELERATE. This penalizes excessive speed changes and encourages smooth driving.
+
+\fi
+
+% "An agent's goal should not always be the same as the goal of the agent's designer."
+
+% Shaping: Give non-sparse rewards in the beginning of the learning process (B.F. Skinner)
+% The Agent is incrementally given increasingly difficult learning problems. In each succeeding problem, the agent's policy learned during the preceding problems leads the agent to encounter rewards more frequently than without an initial policy. Thereby, succeeding problems become easier to learn.
+
+% 
+
+% Inverse reinforcement learning: Allow the agent to learn it's policy by mimicking the attentive human's behavior. 
+
+% Reward signal is a parameter of the learning problem. Automate the trial-and-error based 
+
+\section{General Agent performance}
+
+% performance metrics
+
+% What is the baseline?
+
+The agent's aim is to optimize the reward function. Its performance can therefore be measured by the reward acquired in a test scenario. However, while it is possible to measure whether the agent improves over time using only its own reward, a bad policy might still come with a great performance increase relative to a very bad policy. Thus, it is impossible to tell if the agent performs well by just comparing it to previous versions of itself. Assessing the agent's performance needs to be done in relation to the reward obtained using either a good baseline or an optimal approach.
+
+For the first task of identifying the driver's attentiveness, an optimal solution is easily obtained by simply allowing the baseline to observe the human's attentiveness, deterministically only making it act whenever the human is inattentive. The second task of keeping the car centered in its lane is more difficult as any action that the agent takes indirectly influences the human drivers' following actions. However, one can assume that the driver would only counteract if it was attentive. Since the baseline would never act when the driver is attentive, a situation in which the actions of an attentive driver and the baseline agent clash could never arise. Assuming an attentive human driver acts almost optimally, the actions of the baseline can be determined by using the ACT-R model to retrieve the action an attentive driver would perform given a certain state.
+
+The reward obtained with such a baseline would be close to optimal. Thus, the closer the agent's reward is to the reward obtained using the baseline, the better the agent's policy.\\
+\\
+\textcolor{red}{Add non-optimal baseline?}\\
+\textcolor{red}{Compare reward obtained using different agent architectures? (Feasible?)}
+
+
+
+% a baseline is needed in order to assess whether the agent is generally performing well. Designing a baseline method to be used for the relative evaluation of the agent poses a challenge. 
+
+% The best benchmark is the maximum reward achievable if the agent acts with an optimal policy. However, for this, the optimal policy of the agent would need to be known. Given that the optimal policy is not known, in fact it is exactly what the agent aims to learn, this approach is not feasible. 
+
+% However, assuming an attentive human acts almost optimally, we can utilize our human simulator to determine a baseline reward.
+
+
+
+
+
+% Any action that the agent takes indirectly influences the human drivers' following actions. The human's attention might be restored through an action of the agent. In this case, the agent is supposed to stop interfering. Moreover, the pure history of human actions might be insufficient in order to confidently determine whether the driver is attentive or not. Active probing of the driver through actions of the agent might be necessary, even though they can potentially lead to a penalty in case the driver is in fact attentive.
+
+%It is relatively easy to obtain 
+
+%Under the assumption that attentive human drivers perform optimally, 
+
+% \section{Human and agent collaboration}
+
+% performance metrics

@@ -16,9 +16,15 @@
 \let\theglossary\relax
 \let\endtheglossary\relax
 \usepackage[acronym, toc, nohypertypes={acronym}]{glossaries}
+
+\usepackage{pgfplots}
+\usepgfplotslibrary{fillbetween}
+\pgfplotsset{compat=1.17}
+
+\usepackage{subcaption}
+
 \makeglossaries
 \input{glossary.tex}
-
 
 \author{Jokke Mats Jansen}
 \title{Master's Thesis proposal}
@@ -34,30 +40,13 @@
     \makebox[.16\linewidth][l]{Second:} Dr. Leendert van Maanen
 }
 
-
-\includeonly
-{
-    % sections/dedication,
-    % sections/abstract,
-    % sections/preface,
-    sections/introduction,
-    sections/problem,
-    sections/algorithm,
-    sections/pomcp,
-    sections/literature,
-    sections/experiment,
-    sections/plan,
-}
-
 \begin{document}
 
     \frontmatter        % Folios in Roman numerals, unnumbered chapters.
 
     \uiotitle
 
-    % \include{sections/dedication}
-    % \include{sections/abstract}
-    % \include{sections/preface}
+    \include{sections/abstract}
 
     % \cleartorecto
     \microtypesetup{protrusion = false}
@@ -74,18 +63,16 @@
     \mainmatter         % Folios in Arabic numerals, numbered chapters.
 
     \include{sections/introduction}
-
-    % \part{The First Part}
-    
-    \include{sections/problem}
-    \include{sections/algorithm}
-    \include{sections/pomcp}
     \include{sections/literature}
-    \include{sections/experiment}
-    \include{sections/plan}
+    \include{sections/background}
+    \include{sections/problem}
+    \include{sections/methodology}
+    \include{sections/results}
+    \include{sections/discussion}
+    \include{sections/conclusion}
 
-    % \appendix           % "Chapter" is renamed "Appendix"
-    % \appendixpage       % Similar to \part*{Appendices}, but appears in TOC
+    \appendix           % "Chapter" is renamed "Appendix"
+    \appendixpage       % Similar to \part*{Appendices}, but appears in TOC
 
     % \include{sections/appendixA}
 

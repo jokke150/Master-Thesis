@@ -1,24 +1,26 @@
-\chapter*{State, Actions, Observations, and Reward}
+\chapter{Problem formulation}
 \label{sec:problem}
 
 
 % TODO: Page 38 of Improving Sequential Decision Making in Human-In-The-Loop Systems
 
-\section{Problems}
+% \begin{enumerate}
+%     \item How to get transition and observation probabilities? Am I correct that these need to be given by Florian's model? How would this ever be known in the case of learning with real human drivers?
+%     \item Is the Markov assumption satisfied even though the driver's attentiveness does not depend on the previous state and action?
+%     \item What is known a priori?
+%     \begin{itemize}
+%         \item human's current action (assumption: no, for performance reasons)
+%         \item reward function
+%     \end{itemize}
+% \end{enumerate}
 
-\begin{enumerate}
-    \item How to get transition and observation probabilities? Am I correct that these need to be given by Florian's model? How would this ever be known in the case of learning with real human drivers?
-    \item Is the Markov assumption satisfied even though the driver's attentiveness does not depend on the previous state and action?
-    \item What is known a priori?
-    \begin{itemize}
-        \item human's current action (assumption: no, for performance reasons)
-        \item reward function
-    \end{itemize}
-\end{enumerate}
+\section{Lane keeping with a human in the loop}
 
-\newpage
+\section{Driver model}
 
-\section{State}
+\section{Environment}
+
+\subsection{State}
 
 The tracks will be round courses. Thus, there is no terminal state if everything goes well. If the car reaches an off-track position, however, the car is reset to be in the initial starting position again.\\
 
@@ -46,7 +48,7 @@ Driver attention & True / False & Whether the human driver is attentive or distr
 
 \end{tabularx}
 
-\section{Actions}
+\subsection{Actions}
 
 \begin{tabularx}{\textwidth}{@{}p{0.18\textwidth}>{\centering}p{0.22\textwidth}X@{}}
 \toprule
@@ -66,7 +68,7 @@ The agent needs to be able to fully counteract a distracted driver's actions. In
     \label{eq:steering}
 \end{equation}
 
-\section{Observations}
+\subsection{Observations}
 
 \begin{figure}[ht]
     \includegraphics[width=0.3\linewidth]{figures/Observations.jpg}
@@ -93,8 +95,7 @@ Track position (vertical)  & [$0$,$200$] (m) & Vector of 5 range finder sensors 
 Driver steering (last time step) & [$-1$, $+1$]  & The agent perceives the last input of the human. This is not the action of the human in the next but in the last time step. The agent does not know which action the human is going to choose simultaneous to its own action. $-1$ means full right (159 degrees) and $+1$ means full left (21 degrees).  \\ \bottomrule
 \end{tabularx}
 
-\newpage
-\section*{Reward}
+\subsection{Reward}
 
 The overall goal for the agent is to only assist the driver in keeping the car centered in its lane. Therefore, this is the main source of reward for the agent. The more centered the car is at a certain time step, the more reward $r$ is received. However, the agent is supposed to leave the human driver with as much autonomy as possible. Thus, any intervention by the agent is penalized. Minor smooth interventions are generally preferred over large abrupt steering actions. Accordingly, the penalty is (exponentially) dependent on the intensity of the agent's action. The general assumption is that an attentive driver performs better in keeping the car centered than an inattentive driver. The agent has to predict whether a driver is attentive or not in order to choose its actions correctly. An incorrect prediction of the driver's actions will lead to overshooting and thus be negatively reflected in the reward for keeping the car centered. Lastly, the car is never supposed to leave the lane. Consequently, leaving the lane is highly penalized.
 
