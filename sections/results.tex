@@ -309,10 +309,6 @@
         width=\linewidth,
         height=8cm,
         xlabel={Number of actions},
-        xtick={10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
-        xticklabels={10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
-        x tick label style={rotate=60, anchor=east},
-        symbolic x coords= {10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
         xmajorgrids=true,
         xminorticks=false,
         ylabel={Mean lane centeredness},
@@ -321,12 +317,12 @@
         error bars/y dir=both,
         error bars/y explicit
     ]
-    \addplot [solid, color=blue, mark=square] table [x=Simulations, y=Average Reward, y error=Standard Error, col sep=comma]{data/Simulations/Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 mean.csv};
-    \addplot [solid, color=purple, mark=star] table [x=Simulations, y=Average Reward, y error=Standard Error, col sep=comma]{data/Simulations/Reduced Actions - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 mean.csv};
-    \addplot [solid, color=green, mark=diamond] table [x=Simulations, y=Average Reward, y error=Standard Error, col sep=comma]{data/Simulations/Preferred - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 25 - exp const 1.5 - reduced mean.csv};
-    \addlegendentry{Full action space}
-    \addlegendentry{Reduced action space}
-    \addlegendentry{Preferred actions}
+    \addplot [solid, color=blue, mark=square] table [x=Count, y=Average Distance, y error=Average Distance SE, col sep=comma]{data/Values/Simulations - 50 runs - 1000 actions - discount horizon 5 - exp const 0.75 values.csv};
+    \addplot [solid, color=red, mark=star] table [x=Count, y=Average Distance, y error=Average Distance SE, col sep=comma]{data/Values/Reduced Actions - 50 runs - 1000 actions - discount horizon 5 values.csv};
+    \addplot [solid, color=green, mark=diamond] table [x=Count, y=Average Distance, y error=Average Distance SE, col sep=comma]{data/Values/Preferred - 50 runs - 1000 actions - discount horizon 25 - exp const 1.5 - reduced values.csv};
+    \addlegendentry{1}
+    \addlegendentry{2}
+    \addlegendentry{3}
     \end{axis}
     \end{tikzpicture}
     \caption{Mean lane centeredness.}
