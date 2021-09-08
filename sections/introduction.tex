@@ -53,6 +53,8 @@ How can we assist drivers in lane-keeping, without inducing them to misuse this 
 % Overview first: Tell a story
 %
 
+\section{General context}
+
 Fully autonomously driving cars have the potential to rule out human driving error which is at least a contributing factor to most accidents today. Many social and technical obstacles have yet to be overcome until fully autonomous cars become market-ready \parencite{autonomous_driving_book}. However, many \glspl{adas} such as adaptive cruise control, lane keeping and changing assistance, and automated collision mitigation are already deployed in modern cars. 
 
 The extend to which an \gls{adas} takes control varies. While the potential prevention of human-error caused accidents increases with the elaborateness of intervention by an assistant system, excessive intervention drastically limits the driver's autonomy. A loss of driver autonomy can turn driving into a monotonous and tedious supervisory task. Drivers easily become inattentive and are more prone to distract themselves, for example by looking on their phone. However, as long as assistance systems are not sufficient to handle all situations, a concentrated human will remain necessary to take actions in situations the assistance system fails. Leaving the driver with a pure supervision task can lead to a long transition time for the driver when it is required to retake control of the vehicle \parencite{shared_control}. Being in control means having to concentrate. Therefore, the goal should be to keep the human driver in control as much as possible but to assist when help is really needed. As a result, driving pleasure is enhanced and drivers are prevented from relying too heavily on the assistance systems.
@@ -67,6 +69,8 @@ The extend to which an \gls{adas} takes control varies. While the potential prev
 
 % TODO: Add source for claim of different behavior when inattentive?
 15\% of injury crashes in the US were associated with driver distraction in 2018 \parencite{distracted_nhtsa}. Therefore, it seems reasonable to make the extend of the \gls{adas}'s activation dependent on the driver's level of attention. Whenever a driver is inattentive or distracted, an \gls{adas} needs to be particularly sensitive. Yet in what way can an assistance system detect that a driver is distracted? 
+
+\section{Problem overview}
 
 
 % TODO: Add literature to back up eye tracking machine learing claim
@@ -105,9 +109,14 @@ The result is a shared control scenario where both the human driver and the agen
 
 Learning in a real-world situation is not feasible in the context of this thesis. Despite the inevitable high safety risk, it would also require an enormous investment of resources, and the complexity of a real-world driving scenario represents an insurmountable obstacle. Instead, the agent learns in a simulation environment with a simulated human driver. \gls{torcs}, a racing car simulator that allows to model various driving situations \parencite{torcs} is used as simulation environment. It offers a good balance between realism and resource efficiency and has been utilized in many papers regarding \gls{rl}-based driving before. An \gls{act-r} cognitive model is employed to simulate the human's actions. The model is able to keep the car in its lane, perform lane changes, and avoid collision with other road users. It captures behavioral differences between attentive and inattentive human drivers. Furthermore, a human-subject experiment is performed in the \gls{torcs} simulation environment to identify if the agent is able to generalize well enough to be useful for actual human drivers.
 
+\section{Contributions}
+
+% See (POMDP, POMCP, Thesis) Towards Human-Like Prediction and Decision-Makingfor Automated Vehicles in Highway Scenarios
+
 The main goal and differentiator of this thesis is to utilize reinforcement learning for a shared-control driving task with unknown attention of the human driver. One of the main challenges is that near real-time decisions of the agent are necessary. This drastically limits the time available for online planning. Accordingly, the implementation needs to be very efficient. Solving the problem using an algorithm that requires discretized states (e.g. steering angle categories) is contrasted with a solution using an algorithm directly supporting continuous states.
 
-\section*{Outline}
+
+\section{Outline}
 
 The rest of the proposal is organised as follows:
 \begin{description}

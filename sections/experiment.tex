@@ -1,130 +1,25 @@
-\chapter*{Experiment design}
-\label{ch:experiment}
-\setcounter{page}{1}
+\chapter{Experimental setup}
+\label{sec:setup}
 
-\iffalse
-Open questions:
-- Discretize driver action?
-- Discretize distraction time intervals?
-- Reward calculation; Distance / Angle / Intensity?
-- Overcorrecting behavior when driver regains attentiveness?
-- Size of the planning horizon?
-- How to smooth the agent's action selection (oscillates)?
-- Which observations to use and what discretization bins?
-- Cheat when an observation cannot be found in the tree?
-
-ToDO:
-- Describe discretization procedure
-- Describe reward correctly
-\fi
-
-\section*{Done}
-
-\begin{itemize}
-    \item Highway track
-    \item Persistent performance metric output
-    \item Experiment infrastructure
-\end{itemize}
-
-\section*{Problems}
-
-\begin{itemize}
-    \item With a \textbf{continuous attention/distraction duration}, \textbf{particle deprivation} is likely to happen. When the belief converges towards an attentive driver state, the likelihood of sampling an inattentive driver state decreases, and vice-versa. When the state changes, the observation from the real environment may not match any observations from simulated experience in the planner's tree. In this case, the planner has to be reset.
-    \begin{itemize}
-        \item Particle reinvigoration can be used to diversify the belief space.
-        \item One could \textit{cheat} when resetting the planner, using the true position of the car to sample a new initial belief.
-        \item The driver's state durations can be discrete.
-    \end{itemize}
-    \item \textbf{Continuous driver actions} are almost impossible to represent correctly with the belief. The observation discretization compensates for this to a degree. Two different but similar actions may lead to the same observation. However, the bigger the observation space, the larger the probability that none of the particles in the belief represent the environment's state sufficiently (\textbf{particle divergence}).
-    \begin{itemize}
-        \item Prefer smaller bin sizes for the observation space discretization.
-        \item Particle reinvigoration can be used to diversify the belief space.
-        \item The driver's actions can be discrete.
-    \end{itemize}
-    \item The agent often oscillates between left and right steering or chooses very intense actions.
-    \begin{itemize}
-        \item Optimize exploration constant hyperparameter.
-        \item Introduce smoothing into the reward function.
-    \end{itemize}
-\end{itemize}
-
-\section*{Scenarios}
-
-\begin{itemize}
-    \item Single-step and deep planning horizon
-    \begin{itemize}
-        \item Optimal action can be found with single-step horizon.
-        \item Deeper planning horizon may lead to smoother action selection or better results for fast speed, where the ideal driving trajectory does not always follow the center of the lane.
-    \end{itemize}
-    \item Range of discretization bin sizes
-    \item Different attributes for the observation space
-    \begin{itemize}
-        \item Distance to middle
-        \item Angle w.r.t lane trajectory
-        \item Distance to start
-        \item Proximity sensors
-    \end{itemize}
-    \item Preferred actions
-    \item Small or large action space
-    \item \textit{Cheating} when resetting the planner
-    \item Particle reinvigoration
-    \item Slow speed and fast speed
-    \item Different tick rate for human driver and agent
-\end{itemize}
-
-\newpage
-
-\section*{Driver model}
-
-The driver model is simplistic. If the driver is attentive, its actions are optimal. The driver model returns the action that steers the car as close to the center of the lane as possible. In this case, the agent should not interfere. However, if a distracted driver is modeled, the driver just repeats the last action it performed while being attentive. This can have the effect of the driver's action to overshoot with the car diverging from the center of the lane. Following, the agent has to identify distracted driving and counteract.
-
-When the driver model is initialized, it is randomly set to be attentive or distracted. The driver stays in this state for a randomly chosen discrete time period between ten and 60 seconds for an attentive state and between two and six seconds for a distracted state. After the chosen time period, the state of attentiveness switches; a previously attentive driver becomes distracted, and a previously distracted driver becomes attentive. The process repeats until the experiment is over.
-
-\section*{Generative model}
-
-The POMCP algorithm requires a generative model to simulate the environment. In our case, this includes two components: The driving simulator and the driver model. There is no noise or randomness. An action at a particular state leads to the exact same result in both the environment and the generative model. The only challenge for the agent is to identify the actual state of the environment as close as possible, judging based on the history of observations.
-
-\section*{Setup}
-
+% TODO: Refine
 The task for the agent in the experiment is to keep the car centered in a highway lane. Thus, the track used for the agent's evaluation needs to represent such a scenario. Most tracks readily available in the racing car simulator TORCS are race tracks. These are much wider than common roads and the width often differs in different segments. To ensure a realistic scenario, a one-lane track with a continuous width of 3.5m, which is common for European roads, is used. The track covers a wide array of scenarios. It includes long straight segments, both left and right curves, and multiple curves of alternating directions in a row. By ensuring that all common highway scenarios are covered by the track, a single track is sufficient.
 
 The car used for the experiment does not have a big impact on driving performance, as long as it is consistent during all experiments. To ensure that an action's effect at a particular position are consistent, the speed of the car is constant.
 
 The driver is pulled for an action every 0.1 seconds. The simulation tick rate is 0.002 seconds. When the driver is not pulled, its last action is repeated. It follows, that every action is repeated during 50 simulation ticks. The simulation is not in real time. Therefore, the simulation waits for the agent's planning. If the agent is pulled for an action, the environment does not change until the agent's next action is decided and performed.
 
-\section*{Hyperparameters}
-
+\section{Evaluated scenarios}
+\subsection{Driver model}
+\subsection{Action space and action selection}
+\section{Design decisions}
+\subsection{Discretization}
+\subsection{Hyperparameter optimization}
+% TODO: Refine
 There are a number of hyperparameters. Most importantly, there is the planning time. This is the time the agent is allowed to search in and expand its search tree in order to find the most likely current state and best course of action. More planning time can result in a wider and/or deeper tree. The search horizon is limited by a discount threshold. If this threshold is reached, the search is stopped and no more actions will be performed for the current trajectory and, if there is enough planning time left, a new state is sampled from the current belief and a new planning trajectory is expanded. Moreover, there is an exploration constant. This value, determined before the start of the experiment, assigns actions that have not been tried before more expected reward and thus favors exploration.
+\subsubsection{Number of searches}
+\subsubsection{Exploration constant}
+\subsubsection{Discount horizon}
 
-\section*{Evaluation procedure}
-
+\section{Performance metrics}
 Due to the randomness involved in the driver model, each experiment run will lead to a different scenario. Therefore, to get credible results, the experiment has to be repeated many times. The average discounted return over all experiment runs serves as performance metric. This result is compared with the average reward of an agent that always performs the optimal reaction to the action of the driver model. The closer the POMCP agent's reward is to the optimal agent's reward, the better was the planning.
 
-\section*{Summary}
-
-\subsubsection*{Setup}
-\begin{itemize}
-    \item The scenario is lane-keeping on a single lane highway track with 3.5m width, covering all common scenarios.
-    \item Constant speed (currently 60 km/h) is used during the experiment. For that reason, fuel consumption is disabled to keep the car's weight constant.
-    \item The same car is used for all simulation runs.
-\end{itemize}
-
-\subsubsection*{Simulation details}
-\begin{itemize}
-    \item The simulation tick rate is 0.002 seconds. The driver returns an action every 0.1 seconds of simulated time. This action is repeated 50 times in simulation until the next action is returned.
-    \item The simulation is not in real time. The environment does not change during the planning of the agent.
-\end{itemize}
-
-\subsubsection*{Performance measurement}
-\begin{itemize}
-    \item The performance metric is the average reward over all experiment runs.
-    \item An agent that reacts optimally to the driver model's actions is used as a baseline.
-    \item Each experiment run consists of 3000 performed actions (5 minutes of simulated time).
-    \item At least 100 experiment runs will be performed, averaging the resulting rewards.
-\end{itemize}
-
-\subsubsection*{Hyperparameters and additional techniques}
-\begin{itemize}
-    \item The hyperparameters will be tuned and set before the experiment.
-    \item Particle reinvigoration(against particle deprivation) or preferred actions (performance increase by introducing domain knowledge) may be introduced and compared with the performance of a model without these techniques.
-\end{itemize}
