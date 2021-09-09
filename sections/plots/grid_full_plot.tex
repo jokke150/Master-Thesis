@@ -1,0 +1,54 @@
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+                width=0.8\linewidth,
+                height=6cm,
+                xlabel=Exploration constant,
+                xlabel style={yshift=-5pt},
+                ylabel=Search horizon,
+                ylabel style={yshift=5pt},
+                xticklabels={0.5, 0.75, 1.5, 5, 10, 25},
+                xtick={0,...,5},
+                xtick style={draw=none},
+                yticklabels={25, 10, 5},
+                ytick={0,...,2},
+                ytick style={draw=none},
+                enlargelimits=false,
+                nodes near coords={\ifdim \Cvalue pt = 587.674 pt {\textbf{\pgfmathprintnumber[assume math mode=true]\Cvalue}} \else {\pgfmathprintnumber[assume math mode=true]\Cvalue} \fi},
+                visualization depends on={\thisrow{C} \as \Cvalue},
+                nodes near coords style={anchor=center},
+                colormap={whitemyblue}{color(0)=(white), color(500)=(myblue!30), color(587)=(myblue)},
+            ]
+            \addplot[
+                matrix plot,
+                mesh/cols=6,
+                point meta=explicit,
+                draw=gray
+            ] table [meta=C] {
+                x y C
+                0 0 112.128
+                1 0 404.732
+                2 0 522.667
+                3 0 436.268
+                4 0 323.037
+                5 0 360.914
+                
+                0 1 59.1294
+                1 1 529.063
+                2 1 528.001
+                3 1 581.4
+                4 1 467.673
+                5 1 377.36
+                
+                0 2 356.159
+                1 2 587.674
+                2 2 499.689
+                3 2 355.745
+                4 2 323.708
+                5 2 439.826
+            };
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Grid search for the configuration leading to the highest average cumulative reward after 20 runs with up to 1000 actions each, using the All actions.}
+\end{figure}

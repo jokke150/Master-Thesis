@@ -17,18 +17,24 @@
 \let\endtheglossary\relax
 \usepackage[acronym, toc, nohypertypes={acronym}]{glossaries}
 
+\usepackage{tikz}
+\usetikzlibrary{external}
+\tikzexternalize[prefix=figures/]
+
 \usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
 \usepgfplotslibrary{fillbetween}
-\pgfplotsset{compat=1.17}
+\usepgfplotslibrary{groupplots}
 
 \usepackage{subcaption}
 
+\selectcolormodel{rgb}
 \usepackage{xcolor}
-\usepackage{pgf}
-\usepackage{collcell}
+\definecolor{myblue}{RGB}{68,119,170}
+\definecolor{mygreen}{RGB}{34,136,51}
+\definecolor{myred}{RGB}{238,102,119}
 
-\usetikzlibrary{external}
-\tikzexternalize[prefix=figures/]
+\usepackage{pgf}
 
 \makeglossaries
 \input{glossary.tex}
