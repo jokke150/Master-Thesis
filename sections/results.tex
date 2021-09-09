@@ -3,35 +3,50 @@
 
 \section{Lower and upper performance bound}
 
-\section{Grid search for hyperparameters}
+The benchmarks for the performance of the agent are the performance of the driver without assistance system as lower bound, and the performance of an agent that always reacts optimally to the driver's actions as upper bound. For both baselines, 50 runs for each of the three driver models are performed. 
 
-% This selects the amount of color to use
-% \newcommand*{\MinNumber}{59.1294}%
-% \newcommand*{\MaxNumber}{587.674}%
+In the case of the independent driver, no run was completed successfully. At some point in any run the driver becomes distracted and fails to adjust to a change of the course of the road, leading to lane departure. Table \ref{tab:driver_performance} shows that the more complex the driver model is, the worse is its performance. The simple driver model and the driver model with steering overcorrection lead to a few runs with a relatively high number of successful actions before a lane departure occurs. The reason for this is that the driver only repeats it's last attentive action after becoming distracted. In some cases this means that the distracted driver just continues to steer straight which is less likely to lead to lane departure on the highway track than consecutively steering left or right.
 
-% \newcommand{\ApplyGradient}[1]{%
-%     \pgfmathsetmacro{\PercentColor}{100.0*(#1-\MinNumber)/(\MaxNumber-\MinNumber)}
-%     \textcolor{black!\PercentColor}{#1}
-% }
-% \newcolumntype{R}{>{\collectcell\ApplyGradient}{r}<{\endcollectcell}}
+The agent that reacts optimally to the driver's actions has full knowledge about the environment, as well as the driver's next action and is equipped with a continuous optimal steering policy. Therefore, it can easily choose its action by checking which combined action is the closest to the optimal steering. Due to the discretization of the action space, a possible combination that equals the optimal steering is unlikely but the agent performs whatever action leads to the closest result. It finishes every run successfully and leads to average cumulative rewards of $999.3$ for all driver models.
 
-\subsection{All actions}
+\begin{table}[htbp]
+\centering
+\begin{tabular}{@{}rccc@{}}
+\toprule
+                            & Mean reward & Min \texttt{\#}actions & Max \texttt{\#}actions \\ \midrule
+Simple driver               & 54.39       & 17                     & 347                    \\
+Over correction             & 51.26       & 17                     & 233                    \\
+Over correction and noise   & 31.08       & 14                     & 74                     \\ \bottomrule
+\end{tabular}
+\caption{Independent driver performance}
+\label{tab:driver_performance}
+\end{table}
 
-\input{sections/plots/grid_full_plot}
+\section{Hyperparameter optimization}
 
-\subsection{Bounded actions}
+Hyperparameter optimization is performed for agents with all three action configurations and the driver model with steering overcorrection but without noise. Grid search is used to search for the combination of search horizon and exploration constant that leads to the highest average cumulative reward after 20 runs with up to 1000 actions each and 1000 searches per planning step.
 
-\input{sections/plots/grid_reduced_plot}
+\input{sections/plots/grid_plot}
 
-\subsection{Preferred actions}
+For the agent with a full, unweighted action space, two combinations lead to a sufficiently higher average cumulative reward than the others: The combination of a search horizon of 5 actions with an exploration constant of 0.75 leads to a reward of 587.67, and the combination of planning 10 actions ahead with an exploration constant of 5 results in a reward of 581.40. The shallower the search horizon, the less planning time is needed at every planning step as fewer actions need to be simulated. Thus, at the same performance, a lower search horizon is preferable. The combination of a search horizon of 5 actions and an exploration constant of 0.75 is used for the further experiments.
 
-\input{sections/plots/grid_pref_plot}
+In the case of the agent restricted to using a subset of the action space, the combination of a search horizon of 5 actions and an exploration constant of 25 yields the highest average cumulative reward of 646.83. Only the combination of looking ahead five actions with an exploration constant of 1.5 comes relatively close with a reward of 616.47. As a lower search horizon is preferable, the setup for the further evaluation for this agent is a search horizon of 5 actions with an exploration constant of 25. 
+
+The best combination of search horizon and exploration constant for the agent with preferred actions is 25 actions and 1.5 respectively. This combination yields an average cumulative reward of 942.05 which is sufficiently higher than the return of any other combination. Consequently, this is the combination used for this agent in subsequent experiments.
 
 \section{Convergence behavior}
 
+% TODO: Show how many terminal states were reached
+
 \subsection{Simple driver model}
 
-% TODO: Show how many terminal states were reached
+% Add #actions while attentive
+
+The simple driver model steers optimally when it is in an attentive state. In a distracted state, it simply repeats the last action it has performed while it was still attentive until it becomes attentive again. Therefore, the optimal policy for the agent is to only interfere when the driver is distracted. 
+
+The challenge is threefold: First, the agent must accurately determine where the car is located on the track. The observations the agent receives are accurate, however, because of the discretization, multiple actual positions map to the same observation (See Section \ref{sec:observations}). Second, the agent needs to estimate whether the driver is attentive or not. Third, the agent must decide on an appropriate action choice, taking into account future consequences of the chosen action. In order to achieve this, at each planning step, the agent can search ahead by simulating experiences based on its belief of the environment's and the driver's states. Performing more searches means evaluating more possible scenarios. In turn, more evaluated scenarios enable the agent to form a better policy and therefore selecting the better next action. However, after some amount of searches, the gained information from additional searches decreases and performance is expected to converge \parencite{pomcp}. The number of searches is directly related to the planning time. Planning time is a limiting factor for the application of a planner. Thus, knowing after how many searches the performance converges, and therefore being able to choose the minimal number of searches to perform for a good result, is critical.
+
+
 
 \input{sections/plots/sims_norm_plot}
 

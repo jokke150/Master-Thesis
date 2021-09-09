@@ -1,0 +1,133 @@
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}
+        \begin{groupplot} [
+            group style={
+                group name=grid group,
+                group size=3 by 1,
+                ylabels at=edge left,
+                yticklabels at=edge left,
+                horizontal sep=10pt
+            },
+            width=4.9cm,
+            height=6cm,
+            enlargelimits=false,
+            ylabel=Exploration constant,
+            yticklabels={0.5, 0.75, 1.5, 5, 10, 25},
+            ytick={0,...,5},
+            ytick style={draw=none},
+            xticklabels={5, 10, 25},
+            xtick={0,...,2},
+            xtick style={draw=none},
+            xlabel style={font=\footnotesize},
+            ylabel style={font=\footnotesize},
+            legend style={font=\footnotesize},
+            xticklabel style={font=\footnotesize},
+            yticklabel style={font=\footnotesize},
+            nodes near coords={\ifdim \Cvalue pt = 587.674 pt {\textbf{\pgfmathprintnumber[assume math mode=true, precision=0]\Cvalue}} \else {\pgfmathprintnumber[assume math mode=true, precision=0]\Cvalue} \fi},
+            visualization depends on={\thisrow{C} \as \Cvalue},
+            nodes near coords style={anchor=center, font=\footnotesize}
+        ]
+        \nextgroupplot[title=All actions]
+        \addplot[
+                matrix plot*,
+                mesh/cols=3,
+                point meta=explicit,
+                draw=gray,
+                colormap={whitemyblue}{color(0)=(white), color(500)=(myblue!30), color(587)=(myblue)}
+            ] table [meta=C] {
+                x y C
+                0 0 356.159
+                1 0 59.1294
+                2 0 112.128
+
+                0 1 587.674
+                1 1 529.063
+                2 1 404.732
+
+                0 2 499.689
+                1 2 528.001
+                2 2 522.667
+
+                0 3 355.745
+                1 3 581.4
+                2 3 436.268
+
+                0 4 323.708
+                1 4 467.673
+                2 4 323.037
+
+                0 5 439.826
+                1 5 377.36
+                2 5 360.914
+            };
+        \nextgroupplot[title=Action subset, xlabel=Search horizon]
+        \addplot[
+                matrix plot*,
+                mesh/cols=3,
+                point meta=explicit,
+                draw=gray,
+                colormap={whitegreen}{color(0)=(white), color(400)=(myred!40), color(550)=(myred!50), color(646)=(myred)},
+            ] table [meta=C] {
+                x y C
+                0 0 37.504
+                1 0 45.359
+                2 0 67.388
+
+                0 1 110.563
+                1 1 91.882
+                2 1 96.874
+
+                0 2 553.591
+                1 2 494.649
+                2 2 616.474
+
+                0 3 573.726
+                1 3 206.534
+                2 3 261.538
+
+                0 4 524.302
+                1 4 228.895
+                2 4 238.421
+
+                0 5 646.833
+                1 5 225.915
+                2 5 177.826
+            };
+        \nextgroupplot[title=Preferred actions]
+        \addplot[
+                matrix plot*,
+                mesh/cols=3,
+                point meta=explicit,
+                draw=gray,
+                colormap={whitegreen}{color(0)=(white), color(600)=(mygreen!40), color(942)=(mygreen)}
+            ] table [meta=C] {
+                x y C
+                0 0 572.054
+                1 0 77.416
+                2 0 128.668
+
+                0 1 547.758
+                1 1 796.5
+                2 1 548.097
+
+                0 2 466.936
+                1 2 501.059
+                2 2 942.054
+
+                0 3 512.66
+                1 3 496.409
+                2 3 443.296
+
+                0 4 375.698
+                1 4 404.609
+                2 4 413.298
+
+                0 5 385.954
+                1 5 429.494
+                2 5 351.699
+            };
+        \end{groupplot}
+    \end{tikzpicture}
+    \caption{Average cumulative rewards for combinations of search horizon and exploration constant for all three action configurations (20 runs with up to 1000 actions each and 1000 searches per planning step; driver model with steering overcorrection but without noise).}
+\end{figure}

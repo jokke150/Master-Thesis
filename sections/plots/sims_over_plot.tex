@@ -2,18 +2,24 @@
     \centering
     \begin{tikzpicture}
     \begin{axis}[
-        width=\linewidth,
-        height=8cm,
+        width=0.8\linewidth,
+        height=6cm,
         xlabel={Number of searches},
         xtick={10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
         xticklabels={10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
         x tick label style={rotate=60, anchor=east},
         symbolic x coords= {10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
-        xmajorgrids=true,
+        xmajorgrids=false,
         xminorticks=false,
         ylabel={Average cumulative reward},
+        ymajorgrids=true,
+        ytick distance=200,
         legend pos=south east,
-        legend style={font=\small},
+        xlabel style={font=\footnotesize},
+        ylabel style={font=\footnotesize},
+        legend style={font=\footnotesize},
+        xticklabel style={font=\footnotesize},
+        yticklabel style={font=\footnotesize},
         error bars/y dir=both,
         error bars/y explicit
     ]
@@ -21,9 +27,9 @@
     \addplot [solid, color=purple, mark=square] table [x=Simulations, y=Average Reward, y error=Standard Error, col sep=comma]{data/Simulations/Reduced Actions - Over Correct - 50 runs - 1000 actions - discount horizon 5 mean.csv};
     \addplot [solid, color=mygreen, mark=square] table [x=Simulations, y=Average Reward, y error=Standard Error, col sep=comma]{data/Simulations/Preferred - Over Correct - 50 runs - 1000 actions - discount horizon 25 - exp const 1.5 - reduced mean.csv};
     \addlegendentry{All actions}
-    \addlegendentry{Bounded actions}
+    \addlegendentry{Action subset}
     \addlegendentry{Preferred actions}
     \end{axis}
     \end{tikzpicture}
-    \caption{Performance comparison of POMCP when utilizing the All actions, a Bounded actions, or preferred actions with a driver model that over-corrects when it regains attention. Each point shows the mean cumulative reward from 50 runs with 1000 actions each, if no terminal state is reached earlier.}
+    \caption{Performance comparison of POMCP when utilizing the All actions, a Action subset, or preferred actions with a driver model that over-corrects when it regains attention. Each point shows the mean cumulative reward from 50 runs with 1000 actions each, if no terminal state is reached earlier.}
 \end{figure}
