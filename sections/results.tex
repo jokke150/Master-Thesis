@@ -1,6 +1,8 @@
 \chapter{Results}
 \label{ch:results}
 
+% TODO: Add: The agent can only recognize a state change of the driver after the driver has performed the first action in this state. This is because there are no observable clues about the duration of the driver's attentiveness and distraction.
+
 \section{Lower and upper performance bound}
 
 The benchmarks for the performance of the agent are the performance of the driver without assistance system as lower bound, and the performance of an agent that always reacts optimally to the driver's actions as upper bound. For both baselines, 50 runs with up to 1000 actions each, if no terminal state is reached earlier, are performed for each of the three driver models. 
@@ -9,19 +11,7 @@ In the case of the independent driver, no run was completed successfully. At som
 
 The agent that reacts optimally to the driver's actions has full knowledge about the environment, as well as the driver's next action and is equipped with a continuous optimal steering policy. Therefore, it can easily choose its action by checking which combined action is the closest to the optimal steering. Due to the discretization of the action space, a possible combination that equals the optimal steering is unlikely but the agent performs whatever action leads to the closest result. It finishes every run successfully and leads to average cumulative rewards of $999.3$ for all driver models.
 
-\begin{table}[htbp]
-\footnotesize
-\centering
-\begin{tabular}{@{}rccc@{}}
-\toprule
-                            & Mean reward & Min \texttt{\#}actions & Max \texttt{\#}actions \\ \midrule
-Simple driver               & 54.39       & 17                     & 347                    \\
-Over correction             & 51.26       & 17                     & 233                    \\
-Over correction and noise   & 31.08       & 14                     & 74                     \\ \bottomrule
-\end{tabular}
-\caption{Independent driver performance}
-\label{tab:driver_performance}
-\end{table}
+\input{sections/tables/driver_performance}
 
 \section{Hyperparameter optimization}
 
@@ -36,79 +26,53 @@ In the case of the agent restricted to using a subset of the action space, the c
 The best combination of search horizon and exploration constant for the agent with preferred actions is 25 actions and 1.5 respectively. This combination yields an average cumulative reward of 942.05 which is sufficiently higher than the return of any other combination. Consequently, this is the combination used for this agent in subsequent experiments.
 
 \section{Convergence behavior}
+% TODO: Rename to something more general?
 
-% TODO: Show how many terminal states were reached
+The agent's challenge is threefold: First, it must accurately determine where the car is located on the track. Its observations are accurate, however, because of the discretization, multiple actual positions map to the same observation (See Section \ref{sec:observations}). Second, it needs to estimate whether the driver is attentive or not. Third, it must decide on an appropriate action choice, taking into account future consequences of the chosen action. In order to achieve this, at each planning step, the agent can search ahead by simulating experiences based on its belief of the state of the environment and the driver. Performing more searches means evaluating more possible scenarios. In turn, more evaluated scenarios enable the agent to form a better policy and therefore selecting the better next action. However, after some amount of searches, the information gain from additional searches decreases and performance is expected to converge \parencite{pomcp}. The number of searches is directly related to the planning time. Planning time is a limiting factor for the application of a planner. Thus, knowing after how many searches the performance converges, and therefore being able to choose the minimal number of searches to perform for a good result, is critical. Below, the convergence behavior of the three evaluated agents is assessed for the scenarios of the simple driver model, the driver model with steering overcorrection after regaining attentiveness, and the driver with overcorrection and noise.
 
 \subsection{Simple driver model}
 
-% Add #actions while attentive
-
-The simple driver model steers optimally when it is in an attentive state. In a distracted state, it simply repeats the last action it has performed while it was still attentive until it becomes attentive again. Therefore, the optimal policy for the agent is to only interfere when the driver is distracted. 
-
-The challenge is threefold: First, the agent must accurately determine where the car is located on the track. The observations the agent receives are accurate, however, because of the discretization, multiple actual positions map to the same observation (See Section \ref{sec:observations}). Second, the agent needs to estimate whether the driver is attentive or not. Third, the agent must decide on an appropriate action choice, taking into account future consequences of the chosen action. In order to achieve this, at each planning step, the agent can search ahead by simulating experiences based on its belief of the environment's and the driver's states. Performing more searches means evaluating more possible scenarios. In turn, more evaluated scenarios enable the agent to form a better policy and therefore selecting the better next action. However, after some amount of searches, the gained information from additional searches decreases and performance is expected to converge \parencite{pomcp}. The number of searches is directly related to the planning time. Planning time is a limiting factor for the application of a planner. Thus, knowing after how many searches the performance converges, and therefore being able to choose the minimal number of searches to perform for a good result, is critical.
+% TODO: Actually mention when convergence occurs
+For the experiment with the simple driver model, using the full action space, utilizing only the subset of minor steering actions, and employing preferred actions lead to similar convergence behavior. Already with just 200 searches during planning, the average cumulative reward is above 600 for all agents. However, as it can be seen in Table \ref{tab:simple_terminal}, the number of runs that lead to a terminal state is high. In the runs resulting in a terminal state, the agents are able to assist the drivers well at first but suffer from belief divergence after some time. Then, their belief deviates noticably from the true states of the environment and the driver. The agents are not able anymore to make accurate assumptions about the state of the environment and whether the driver is attentive or not. Thus, they are rendered unable to decide on the right actions to keep the car centered. 
 
 \input{sections/plots/sims_norm_plot}
 
-Using the full action space, utilizing only the subset of minor steering actions, and employing preferred actions lead to similar results for the experiment with the simple driver model. Already with just 200 searches during planning, the average cumulative reward is above 600 for all agents. However, as it can be seen in table \ref{tab:simple_terminal}, the number of runs that lead to a terminal state is high. In the runs that result in a terminal state, the agents are able to assist the drivers well at first but suffer from belief divergence after some time. Then, their belief deviates noticably from the environmen's and driver's true state. The agents are not able anymore to make accurate assumptions about the state of the environment and whether the driver is attentive or not. Thus, they are rendered unable to take the right actions to keep the car centered. 
+The agent using the full range of actions already causes only four terminal states with 300 searches, whereas the other two agents need more searches to perform well. The best result for all three agents is achieved with 1500 searches. No run results in a terminal state. The the agent with full action space receives an average cumulative reward of 957.83, the agent with a reduced action space yields 981.99, and the agent using preferred actions gains 973.88. 
 
-The agent using the full range of actions already causes only four terminal states with 300 searches whereas the other two agents need more searches to perform well. The best result for all three agents is achieved with 1500 searches. No run results in a terminal state. The the agent with full action space receives an average cumulative rewards of 957.83, the agent with a reduced action space yields 981.99, and the agent using preferred actions gains 973.88. 
+For more searches, the average cumulative rewards are similar for the agents with a subset of actions and preferred actions. In contrast, the agent with a complete action space encounters four terminal states in the trial with 5000 searches and six in the experiment with 7500 seaches. These terminal states are reached early on during the run - executing less than 50 actions before. They are caused by an extreme action of the agent that leads to the opposite of optimal steering behavior. The actions completely overrule the driver's actions who is even concentrated in three of the ten occasions. The reason for choosing these extreme actions is a poor belief that strongly deviates from the true states of the environment and the driver. The agent with preferred actions is less likely to perform extreme actions, and the agent with a subset of minor actions cannot do so. 
 
-For more searches, the average rewards are comparable, with the exception of the trials with 5000 and 7500 simulations for the agent with a complete action space. Four and six runs which reach terminal states respectively. In all cases, the terminal states are reached early - executing less than 50 actions before. The causes are extreme actions by the agent that lead to the opposite of optimal steering behavior. These actions completely overrule the driver who is even concentrated in three of the ten occasions. The reason for this is likely the combination of a poor belief that strongly deviates from the true state, and exploration to counteract this by acquiring more information. % TODO: Check if this checks out
+% TODO: Why doesn't belief divergence occur for the preferred actions scenario?
+% Fewer action choices during planning mean you need less searches to get an accurate image.
 
+% TODO: Can exploration explain the poor performance at 5k and 7.5k of the full action model?
 
-\begin{table}[htbp]
-\footnotesize
-\centering
-\centerfloat
-\begin{tabular}{@{}rccccccccccccc@{}}
-\toprule
-                    & 10 & 100 & 200 & 300 & 400 & 500 & 750 & 1000 & 1500 & 2500 & 5000 & 7500 & 10000 \\ \midrule
-All       & 50 & 50  & 22  & 4   & 4   & 3   & 3   & 1    & 0    & 1    & 4    & 6    & 1     \\
-Subset     & 50 & 48  & 27  & 26  & 11  & 18  & 6   & 5    & 0    & 2    & 0    & 2    & 2     \\
-Preferred & 50 & 50  & 32  & 13  & 8   & 4   & 1   & 3    & 0    & 0    & 1    & 0    & 0     \\ \bottomrule
-\end{tabular}
-\caption{Number of terminal runs by the number of performed searches at each planning step in the experiment with a simple driver model for agents with all three action space types.}
-\label{tab:simple_terminal}
-\end{table}
+The agent restricted to use only a subset of minor actions reaches terminal states in two states in the experiments with 2500, 7500, and 10000 searches. These are not caused by belief divergence. In all cases, the car is in a road bend and the driver is distracted, steering into the wrong direction. The agent performs its best possible action by steering as much as possible in the opposite direction than the driver. However, because the agent's range of actions is severely limited, the combination of the agent's and driver's actions is not enough to keep the car in the lane. 
 
+Using preferred actions results in only one terminal state for experiments with 1500 searches or more. The reason, like for the terminal states reached by the agent without weighted actions, is belief divergence in combination with an extreme action. Nevertheless, extreme actions are much less likely for the agent with preferred actions. There are multiple occasions where a distracted driver steers into the wrong direction in a road bend and the agent is able to correct the steering by effectively reversing the driver's actions.
+
+% TODO: Add #actions while attentive
+% The simple driver model steers optimally when it is in an attentive state. In a distracted state, it simply repeats the last action it has performed while it was still attentive until it becomes attentive again. Therefore, the optimal policy for the agent is to only interfere when the driver is distracted. 
+
+\input{sections/tables/terminal_norm}
 
 \subsection{Steering over-correction}
 
+% TODO: Tchnically, the agent can never directly know when a driver's state change occurs but only after the driver executes the first action in the new state. 
+% The steering overcorrection after a formerly distracted driver regains attentiveness presents a greater challenge for the agents. Due to the overcorrection, identifying the exact moment a driver becomes attentive again is more important as 
+
+% the agent also needs to account for the overcorrection when choosing its action. Performing more searches increases the likelihood of 
+
+% Consequently, the performance of the agents 
+
 \input{sections/plots/sims_over_plot}
 
-\begin{table}[htbp]
-\footnotesize
-\centering
-\centerfloat
-\begin{tabular}{@{}rccccccccccccc@{}}
-\toprule
-& 10 & 100 & 200 & 300 & 400 & 500 & 750 & 1000 & 1500 & 2500 & 5000 & 7500 & 10000 \\ \midrule
-All       & 50 & 50  & 49  & 45  & 42  & 46  & 42  & 41   & 35   & 13   & 4    & 5    & 6     \\
-Subset    & 50 & 50  & 49  & 49  & 48  & 49  & 42  & 39   & 23   & 17   & 3    & 1    & 1     \\
-Preferred & 50 & 50  & 49  & 42  & 35  & 29  & 10  & 3    & 0    & 0    & 0    & 0    & 0     \\ \bottomrule
-\end{tabular}
-\caption{Number of terminal runs by the number of performed searches at each planning step in the experiment with a driver model with steering over correction for agents with all three action space types.}
-\label{tab:simple_terminal}
-\end{table}
+\input{sections/tables/terminal_over}
 
 \subsection{Steering over-correction and noise}
 
 \input{sections/plots/sims_noise_plot}
 
-\begin{table}[htbp]
-\footnotesize
-\centering
-\centerfloat
-\begin{tabular}{@{}rccccccccccccc@{}}
-\toprule
-& 10 & 100 & 200 & 300 & 400 & 500 & 750 & 1000 & 1500 & 2500 & 5000 & 7500 & 10000 \\ \midrule
-All       & 50 & 50  & 50  & 44  & 42  & 40  & 40  & 40   & 30   & 15   & 4    & 6    & 5     \\
-Subset    & 50 & 50  & 49  & 47  & 46  & 47  & 37  & 35   & 25   & 14   & 5    & 1    & 1     \\
-Preferred & 50 & 50  & 48  & 43  & 37  & 26  & 20  & 1    & 0    & 0    & 3    & 0    & 0     \\ \bottomrule
-\end{tabular}
-\caption{Number of terminal runs by the number of performed searches at each planning step in the experiment with a driver model with steering over correction and noise for agents with all three action space types.}
-\label{tab:simple_terminal}
-\end{table}
+\input{sections/tables/terminal_noise}
 
 \section{Comparison of driving trajectories}
 

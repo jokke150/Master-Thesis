@@ -5,6 +5,7 @@
         width=0.8\linewidth,
         height=6cm,
         % title={Simple driver model},
+        mark size=1pt,
         xlabel={Number of searches},
         xtick={10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
         xticklabels={10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
@@ -32,5 +33,5 @@
     \addlegendentry{Preferred actions}
     \end{axis}
     \end{tikzpicture}
-    \caption{Performance comparison of POMCP when utilizing the All actions, a Action subset, or preferred actions with a simple driver model. Each point shows the mean cumulative reward from 50 runs with 1000 actions each, if no terminal state is reached earlier.}
+    \caption[Performance of POMCP with a simple driver model]{Performance comparison of POMCP when utilizing all actions, an action subset, or preferred actions with a simple driver model. Each point shows the mean cumulative reward from 50 runs with 1000 actions each, if no terminal state is reached earlier.}
 \end{figure}
