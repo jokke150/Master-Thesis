@@ -58,11 +58,22 @@ Using preferred actions results in only one terminal state for experiments with 
 \subsection{Steering over-correction}
 
 % TODO: Tchnically, the agent can never directly know when a driver's state change occurs but only after the driver executes the first action in the new state. 
-% The steering overcorrection after a formerly distracted driver regains attentiveness presents a greater challenge for the agents. Due to the overcorrection, identifying the exact moment a driver becomes attentive again is more important as 
+A driver that overcorrects after regains attentiveness by overcorrecting its steering in her first attentive action presents a greater challenge for the agents. Due to the overcorrection, 
 
-% the agent also needs to account for the overcorrection when choosing its action. Performing more searches increases the likelihood of 
 
-% Consequently, the performance of the agents 
+
+it is more difficult for the agent to keep a consistent belief
+
+
+having a driver state in the the exact moment a driver becomes attentive again is more important as  
+
+
+
+
+
+the agent also needs to account for the overcorrection when choosing its action. Performing more searches increases the likelihood of 
+
+Consequently, the performance of the agents 
 
 \input{sections/plots/sims_over_plot}
 
@@ -74,6 +85,9 @@ Using preferred actions results in only one terminal state for experiments with 
 
 \input{sections/tables/terminal_noise}
 
+
+% TODO: Add plot with all three results for the noise scenario for comparison?
+
 \section{Comparison of driving trajectories}
 
 % angular jerkiness
@@ -83,4 +97,5 @@ Using preferred actions results in only one terminal state for experiments with 
 
 % mean lane centeredness
 
+% TODO: Show 10 - 500 - 1000 (point of convergence) for noise scenario?
 \input{sections/plots/lane_center_plot}

@@ -12,8 +12,9 @@ The driver is pulled for an action every 0.1 seconds. The simulation tick rate i
 \subsection{Driver model}
 \subsection{Action space and action selection}
 \section{Design decisions}
-\subsection{Discretization}
-\subsection{Hyperparameter optimization}
+% TODO Leave out? Or add something useful here
+
+\section{Hyperparameter optimization}
 % TODO: Refine
 There are a number of hyperparameters. Most importantly, there is the planning time. This is the time the agent is allowed to search in and expand its search tree in order to find the most likely current state and best course of action. More planning time can result in a wider and/or deeper tree. The search horizon is limited by a discount threshold. If this threshold is reached, the search is stopped and no more actions will be performed for the current trajectory and, if there is enough planning time left, a new state is sampled from the current belief and a new planning trajectory is expanded. Moreover, there is an exploration constant. This value, determined before the start of the experiment, assigns actions that have not been tried before more expected reward and thus favors exploration.
 \subsubsection{Number of searches}

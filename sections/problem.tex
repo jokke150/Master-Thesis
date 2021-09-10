@@ -1,4 +1,4 @@
-\chapter{Problem formulation}
+\chapter{Methodology}
 \label{sec:problem}
 
 
@@ -14,27 +14,15 @@
 %     \end{itemize}
 % \end{enumerate}
 
-\section{Lane keeping with a human in the loop}
+\section{Lane keeping with a human in the loop as a POMDP}
+
+% TODO: Add overview picture
 
 % TODO: Add: The agent can only recognize a state change of the driver after the driver has performed the first action in this state. This is because there are no observable clues about the duration of the driver's attentiveness and distraction.
 
-\section{Driver model}
+\subsection{Driving simulator TORCS}
 
-The driver model is simplistic. If the driver is attentive, its actions are optimal. The driver model returns the action that steers the car as close to the center of the lane as possible. In this case, the agent should not interfere. However, if a distracted driver is modeled, the driver just repeats the last action it performed while being attentive. This can have the effect of the driver's action to overshoot with the car diverging from the center of the lane. Following, the agent has to identify distracted driving and counteract.
-
-When the driver model is initialized, it is randomly set to be attentive or distracted. The driver stays in this state for a randomly chosen discrete time period between ten and 60 seconds for an attentive state and between two and six seconds for a distracted state. After the chosen time period, the state of attentiveness switches; a previously attentive driver becomes distracted, and a previously distracted driver becomes attentive. The process repeats until the experiment is over.
-
-\subsection{Simple driver model}
-
-
-\subsection{Steering over-correction}
-
-
-\subsection{Steering over-correction and noise}
-
-\section{Environment}
-
-\subsection{State}
+\subsubsection{State}
 
 % TODO: Define terminal state
 
@@ -64,7 +52,7 @@ Driver attention & True / False & Whether the human driver is attentive or distr
 
 \end{tabularx}
 
-\subsection{Actions}
+\subsubsection{Actions}
 
 \begin{tabularx}{\textwidth}{@{}p{0.18\textwidth}>{\centering}p{0.22\textwidth}X@{}}
 \toprule
@@ -84,7 +72,7 @@ The agent needs to be able to fully counteract a distracted driver's actions. In
     \label{eq:steering}
 \end{equation}
 
-\subsection{Observations}
+\subsubsection{Observations}
 \label{sec:observations}
 
 \begin{figure}[ht]
@@ -111,6 +99,20 @@ Track position (vertical)  & [$0$,$200$] (m) & Vector of 5 range finder sensors 
 
 Driver steering (last time step) & [$-1$, $+1$]  & The agent perceives the last input of the human. This is not the action of the human in the next but in the last time step. The agent does not know which action the human is going to choose simultaneous to its own action. $-1$ means full right (159 degrees) and $+1$ means full left (21 degrees).  \\ \bottomrule
 \end{tabularx}
+
+\subsection{Driver model}
+
+The driver model is simplistic. If the driver is attentive, its actions are optimal. The driver model returns the action that steers the car as close to the center of the lane as possible. In this case, the agent should not interfere. However, if a distracted driver is modeled, the driver just repeats the last action it performed while being attentive. This can have the effect of the driver's action to overshoot with the car diverging from the center of the lane. Following, the agent has to identify distracted driving and counteract.
+
+When the driver model is initialized, it is randomly set to be attentive or distracted. The driver stays in this state for a randomly chosen discrete time period between ten and 60 seconds for an attentive state and between two and six seconds for a distracted state. After the chosen time period, the state of attentiveness switches; a previously attentive driver becomes distracted, and a previously distracted driver becomes attentive. The process repeats until the experiment is over.
+
+\subsubsection{Simple driver model}
+
+
+\subsubsection{Steering over-correction}
+
+
+\subsubsection{Steering over-correction and noise}
 
 \subsection{Reward}
 
@@ -151,3 +153,28 @@ The overall goal for the agent is to only assist the driver in keeping the car c
         0 & \text{if} \quad |Pos_{hor}| \leq 1
     \end{cases}
 \end{equation*}
+
+\section{Solution approach using the POMCP algorithm}
+\subsection{POMCP}
+\label{sec:pomcp}
+
+% explain: 
+% - Planning versus learning
+% - How POMCP breaks the curse of dimensionality with Monte-Carlo sampling
+% - Belief and blief update
+
+% Particle filter belief update:
+% See (POMDP, Thesis) Tactical Decision-Making forHighway Driving
+
+% TODO: Replace planning time with number of searches
+
+\begin{figure}[htbp]
+    \centerfloat
+    \includegraphics[width=1.2\textwidth]{figures/POMCP.pdf}
+\end{figure}
+
+\Gls{pomcp} constructs a search tree with nodes representing histories $h$ of actions and observations. At each node, $N(h)$ stores the number of times the represented history $h$ has been encountered, $V(h)$ is the node's value that is approximated by the average return of simulations starting at history $h$, and $B(h)$ represents the node's belief over the real environment's state. $B(h)$ is a collection of potential states where the likelihood of each state is given by the relative number of times it is included in the collection.
+
+If the belief at the node representing $h_{real}$ is empty, an initial state distribution $I$ is used to sample a start state $s$ for the search. Otherwise, $B(h_{real})$ is utilized. The search tree is then searched in two stages. First, in the case that the search tree already contains child nodes for all actions at the current history, UCB1 is used for the action selection. Exploration is achieved by increasing the value of rarely-tried actions by an exploration bonus. Second, when the tree is missing a node for a potential action at the current history, a rollout policy is used to select actions. In the most simple case, this means choosing uniformly random over the action space. In either case, the selected action is executed on the start state $s$, leading to a successive state $s'$, observation $o$, and reward $r$. The process is repeated with resulting successive states until a maximum depth of the tree is reached. Afterwards, the beliefs, counts, and values are updated at all nodes for the histories resulting from the UCB1 action selection, and the node for the first history resulting from the rollout policy. The belief is updated by adding the successive states $s'$ from the simulator to the collections $B(ho)$ in the nodes. If the maximum planning time has not yet been reached, another start state is sampled and the whole process repeats. When the time runs out, the action $a_{best}$ with the highest value at the current history $h_{real}$ is returned. After this action is executed in the real environment, with an observation $o_{last}$ the tree can be pruned. Only the nodes from history $h_{real}a_{best}o_{last}$ onward stay relevant as all other histories are rendered impossible.
+
+\subsection{Discretization}
