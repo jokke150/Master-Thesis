@@ -101,6 +101,7 @@ Driver steering (last time step) & [$-1$, $+1$]  & The agent perceives the last 
 \end{tabularx}
 
 \subsection{Driver model}
+\label{sec:driver_model}
 
 The driver model is simplistic. If the driver is attentive, its actions are optimal. The driver model returns the action that steers the car as close to the center of the lane as possible. In this case, the agent should not interfere. However, if a distracted driver is modeled, the driver just repeats the last action it performed while being attentive. This can have the effect of the driver's action to overshoot with the car diverging from the center of the lane. Following, the agent has to identify distracted driving and counteract.
 
@@ -155,7 +156,9 @@ The overall goal for the agent is to only assist the driver in keeping the car c
 \end{equation*}
 
 \section{Solution approach using the POMCP algorithm}
-\subsection{POMCP}
+\subsection{Discretization}
+
+\subsection{General POMCP definition}
 \label{sec:pomcp}
 
 % explain: 
@@ -167,7 +170,10 @@ The overall goal for the agent is to only assist the driver in keeping the car c
 % See (POMDP, Thesis) Tactical Decision-Making forHighway Driving
 
 % TODO: Replace planning time with number of searches
-
+% TODO: Add select random
+% TODO: Fix arrow for h = hao, s=s' (Use two diagonal arrows)
+% TODO: Add caption
+% TODO: Mark rollout and search phase as in the original paper
 \begin{figure}[htbp]
     \centerfloat
     \includegraphics[width=1.2\textwidth]{figures/POMCP.pdf}
@@ -177,4 +183,27 @@ The overall goal for the agent is to only assist the driver in keeping the car c
 
 If the belief at the node representing $h_{real}$ is empty, an initial state distribution $I$ is used to sample a start state $s$ for the search. Otherwise, $B(h_{real})$ is utilized. The search tree is then searched in two stages. First, in the case that the search tree already contains child nodes for all actions at the current history, UCB1 is used for the action selection. Exploration is achieved by increasing the value of rarely-tried actions by an exploration bonus. Second, when the tree is missing a node for a potential action at the current history, a rollout policy is used to select actions. In the most simple case, this means choosing uniformly random over the action space. In either case, the selected action is executed on the start state $s$, leading to a successive state $s'$, observation $o$, and reward $r$. The process is repeated with resulting successive states until a maximum depth of the tree is reached. Afterwards, the beliefs, counts, and values are updated at all nodes for the histories resulting from the UCB1 action selection, and the node for the first history resulting from the rollout policy. The belief is updated by adding the successive states $s'$ from the simulator to the collections $B(ho)$ in the nodes. If the maximum planning time has not yet been reached, another start state is sampled and the whole process repeats. When the time runs out, the action $a_{best}$ with the highest value at the current history $h_{real}$ is returned. After this action is executed in the real environment, with an observation $o_{last}$ the tree can be pruned. Only the nodes from history $h_{real}a_{best}o_{last}$ onward stay relevant as all other histories are rendered impossible.
 
-\subsection{Discretization}
+% TODO: Add particles as a construct (Or change particles everywhere else to "state in the belief")
+% See Algorithms for decision making book
+
+% One common approach is to use a particle filter, which represents the belief state as a collection of states. 10 Each state in the approximate belief is called a particle.
+
+\subsection{Particle deprivation and particle injection}
+\label{sec:particle_deprivation}
+
+Particle filter approaches, POMCP included, can fail due to a phenomenon called particle deprivation. Because of the random nature of the process, the belief can sometimes converge towards a state that is far from the environment's true state. Particles that differ from the converged state have a low probability to be selected while sampling (low relative count). Hence, with each iteration, they become scarcer until they are completely erased from the belief. At this point, the agent is sure to be in an erroreous state and cannot recover anymore. Particle injection (also called particle reinvigoration) is a method to counteract this problem by introducing a number of random particles to the belief at each iteration \parencite{decision_making_book}. While this reduces the accuracy of the belief, it prevents its complete convergence towards a wrong state. 
+
+Particle injection is used to increase the variance of the belief about the driver model state. Only observable information is used. Concretely, particle injection is implemented by adding driver model states with a random number of remaining actions and the same action as the one that was last observed. The number of remaining actions can be lower than the minimum defined in Section \ref{sec:driver_model} because this limit is only intended for initial sampling and the true remaining number of driver actions in a particular state might be lower after having performed actions already. Like in the original POMCP paper, the amount of transformed particles that are added before each planning step is $1/16$ of the number of searches. The particles can be added during policy execution, and therefore, do not influence planning time.
+
+% Use term posterior probability distribution? We can only add particles after making an observation so that we can verify that the potential particles to add match this belief.
+
+
+\subsection{Action selection and preferred actions}
+\label{sec:action_selection}
+
+% TODO: Just say the agent does not act anymore when losing track with the belief instead of using uniformly random action selection? Makes more sense.
+
+% This is strongly related to the particle deprivation problem described in Section \ref{sec:particle_deprivation}. When the driver is in a distracted or attentive state, any number of remaining actions in this state below the maximum number (see Section \ref{sec:driver_model}) could be valid and can therefore be part of the driver model states in the belief. In successive iterations, particles that represent drivers switching their state earlier than the true driver, and therefore change their steering behavior, are ruled out and removed from the belief. Thereby, after some iterations, driver model states that have the same or more remaining actions than the true state dominate the belief.
+
+% preferred actions = domain knowledge
+

@@ -42,10 +42,11 @@ The agent using the full range of actions already causes only four terminal stat
 For more searches, the average cumulative rewards are similar for the agents with a subset of actions and preferred actions. In contrast, the agent with a complete action space encounters four terminal states in the trial with 5000 searches and six in the experiment with 7500 seaches. These terminal states are reached early on during the run - executing less than 50 actions before. They are caused by an extreme action of the agent that leads to the opposite of optimal steering behavior. The actions completely overrule the driver's actions who is even concentrated in three of the ten occasions. The reason for choosing these extreme actions is a poor belief that strongly deviates from the true states of the environment and the driver. The agent with preferred actions is less likely to perform extreme actions, and the agent with a subset of minor actions cannot do so. 
 
 % TODO: Why doesn't belief divergence occur for the preferred actions scenario?
-% Fewer action choices during planning mean you need less searches to get an accurate image.
+% Fewer action choices during planning mean you need less searches to get an accurate image. And why doesn't it occur for reduced actions then? NOPE
 
 % TODO: Can exploration explain the poor performance at 5k and 7.5k of the full action model?
 
+% Is this even true? Or is random action selection used? Checked, true!
 The agent restricted to use only a subset of minor actions reaches terminal states in two states in the experiments with 2500, 7500, and 10000 searches. These are not caused by belief divergence. In all cases, the car is in a road bend and the driver is distracted, steering into the wrong direction. The agent performs its best possible action by steering as much as possible in the opposite direction than the driver. However, because the agent's range of actions is severely limited, the combination of the agent's and driver's actions is not enough to keep the car in the lane. 
 
 Using preferred actions results in only one terminal state for experiments with 1500 searches or more. The reason, like for the terminal states reached by the agent without weighted actions, is belief divergence in combination with an extreme action. Nevertheless, extreme actions are much less likely for the agent with preferred actions. There are multiple occasions where a distracted driver steers into the wrong direction in a road bend and the agent is able to correct the steering by effectively reversing the driver's actions.
@@ -57,23 +58,66 @@ Using preferred actions results in only one terminal state for experiments with 
 
 \subsection{Steering over-correction}
 
+% TODO: Include Max values. They are similar to the average values in the simple case. The agent just fails to predict the state correctly more often.
+
 % TODO: Tchnically, the agent can never directly know when a driver's state change occurs but only after the driver executes the first action in the new state. 
-A driver that overcorrects after regains attentiveness by overcorrecting its steering in her first attentive action presents a greater challenge for the agents. Due to the overcorrection, 
+A driver that overcorrects after regaining attentiveness by steering too strongly in her first attentive action presents a greater challenge for the agents. When choosing its next action, an agent also need to account for the driver's possible overcorrection. As the amount of overcorrection is stochastic (see Section \ref{sec:driver_model}), not every particle with an attentive driver state leads to the same action anymore. The complexity of the planning problem is higher. Generally, more searches are needed in order to evaluate a greater variety of possible states from the belief while planning.
+
+As it can be seen in Figure \ref{fig:searches_over}, the agent using preferred actions converges sufficiently earlier towards a good policy than the other two agents. This is mainly caused by a high number of terminal states reached during evaluation runs of the agents with full and reduced action spaces (see Table \ref{tab:over_terminal}). For example, with 750 searches, the agent using preferred actions receives an average cumulative reward of 883.43 with only 10 runs ending in a terminal state, while the other agents each reach terminal states in 42 runs. The agent with an unrestricted action space yields a return of 464.89, and the one with a restricted action space gains 473.67. In contrast to the experiment with the simple driver model, the terminal states are caused almost exclusively by particle deprivation after a formerly distracted driver becomes attentive again and overcorrects. If the agent did not account for this possibility properly, no matching node for the observation resulting from the overcorrection can be found in the agent's tree. In this case, the agent cannot recover and has to fall back to uniformly random action selection (see Section \ref{sec:action_selection}), which usually leads to a terminal state after just a few actions. % TODO: Just say the agent just stops acting and the episode ends when the driver becomes distracted again?
+
+The agent with preferred actions is able to form a more accurate belief of the environment's true state with fewer searches than the other two agents. Due to the use of preferred actions, the agent does not start with equal initial values at new nodes during rollouts. Instead, the actions are weighted with domain knowledge (see Section \ref{sec:action_selection}). The likelihood of selecting an action during rollout is bound to its intensity, with less severe steering actions being preferred as the need for strong steering is scarce on a highway track. Assuming the underlying assumption of the introduced domain knowledge is valid and the return is confirmed to be higher for a preferred action during initial searches, the exploration is kept to a minimum. If the reward does not drop sufficiently, the agent is allowed to exploit on the preferred action. It is like lowering the threshold of trustworthyness for preferred actions; they need less initial confirmation than others. Thereby, a preferred  action, if successful initially, is evaluated relatively often, even with fewer searches. At each evaluation, the simulated next state will be added to the belief of the node representing the chosen action and its corresponding observation. Consequently, nodes connected with the preferred actions hold a more comprehensive belief. This results in a lower chance of particle deprivation. The advantage of the agent using preferred actions becomes clearer than before during this experiment.
+
+% the rollout phase, the agent will use this action to simulate a possible trajectory starting from a sampled belief state. At the node representing the chosen action and its corresponding observation, the simulated next state will be added to the belief. 
+
+% resulting 
+
+% add a new node for the action and the corresponding observation after simulating a possible trajectory starting with this action (see Section \section{pomcp}).
 
 
 
-it is more difficult for the agent to keep a consistent belief
+% The advantage of the agent using preferred actions becomes clearer than before during this experiment. 
+
+% The agent with the full action space initially values every action equally. Actions with a low payoff are incrementally selected less by the UCB1 action selection (see Section \ref{sec:pomcp}). However, some exploration is necessary. Therefore, many potentially unlikely extreme scenarios are simulated during planning. Thereby, the amount of searches with more likely high-rewarding minor actions is reduced. Particle deprivation can occur. Particle injection helps but is no definite cure. Because of this, this agent needs many searches to be able to account for overcorrection when a distracted driver becomes attentive again. At 750 searches, the agent fails to do so. 34 of the terminal states occur when the driver is attentive. In the other cases, the value of extreme actions is overestimated, which leads to extreme actions in the real environment and results in driving off the track. % The end terminal state is less important than when the agent started cheating
+
+% Mention how many times the agents lose track after the driver oversteering. And that they use random action selection for some time after
+
+% 
 
 
-having a driver state in the the exact moment a driver becomes attentive again is more important as  
+
+
+
+% How often does the planner lose track and use random action selection? 
+
+% The overcorrection is relative to the amount the driver needs to correct the steering. 
+% Preferred gets a better result and can keep
+
+
+% The reduced action space for the agent with an action space subset is intended to mitigate this. The need for extreme actions is scarce. Only evaluating minor actions 
+
+
+% However, whenever a distracted driver regains attentiveness, and overcorrects her steering, the agent may be required to counteract with a sufficiently strong steering action. When this happens 
+ 
 
 
 
 
+% in the belief states 
 
-the agent also needs to account for the overcorrection when choosing its action. Performing more searches increases the likelihood of 
 
-Consequently, the performance of the agents 
+% Due to the overcorrection, 
+
+
+% having a particle in the belief that represents a driver who becomes attentive again in the the exact moment the real driver regains its attentiveness
+
+
+% a driver  is more important as  
+
+
+
+% it is more difficult for the agent to keep a consistent belief
+
+% Consequently, the performance of the agents 
 
 \input{sections/plots/sims_over_plot}
 
