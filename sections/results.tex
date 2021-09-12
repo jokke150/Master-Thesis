@@ -7,7 +7,7 @@
 
 The benchmarks for the performance of the agent are the performance of the driver without assistance system as lower bound, and the performance of an agent that always reacts optimally to the driver's actions as upper bound. For both baselines, 50 runs with up to 1000 actions each, if no terminal state is reached earlier, are performed for each of the three driver models. 
 
-In the case of the independent driver, no run was completed successfully. At some point in any run the driver becomes distracted and fails to adjust to a change of the course of the road, leading to lane departure. Table \ref{tab:driver_performance} shows that the more complex the driver model is, the worse is its performance. The simple driver model and the driver model with steering overcorrection lead to a few runs with a relatively high number of successful actions before a lane departure occurs. The reason for this is that the driver only repeats it's last attentive action after becoming distracted. In some cases this means that the distracted driver just continues to steer straight which is less likely to lead to lane departure on the highway track than consecutively steering left or right.
+In the case of the independent driver, no run was completed successfully. At some point in any run the driver becomes distracted and fails to adjust to a change of the course of the road, leading to lane departure. Table~\ref{tab:driver_performance} shows that the more complex the driver model is, the worse is its performance. The simple driver model and the driver model with steering overcorrection lead to a few runs with a relatively high number of successful actions before a lane departure occurs. The reason for this is that the driver only repeats it's last attentive action after becoming distracted. In some cases this means that the distracted driver just continues to steer straight which is less likely to lead to lane departure on the highway track than consecutively steering left or right.
 
 The agent that reacts optimally to the driver's actions has full knowledge about the environment, as well as the driver's next action and is equipped with a continuous optimal steering policy. Therefore, it can easily choose its action by checking which combined action is the closest to the optimal steering. Due to the discretization of the action space, a possible combination that equals the optimal steering is unlikely but the agent performs whatever action leads to the closest result. It finishes every run successfully and leads to average cumulative rewards of $999.3$ for all driver models.
 
@@ -25,15 +25,15 @@ In the case of the agent restricted to using a subset of the action space, the c
 
 The best combination of search horizon and exploration constant for the agent with preferred actions is 25 actions and 1.5 respectively. This combination yields an average cumulative reward of 942.05 which is sufficiently higher than the return of any other combination. Consequently, this is the combination used for this agent in subsequent experiments.
 
-\section{Convergence behavior}
+\section{Reward convergence behavior}
 % TODO: Rename to something more general?
 
-The agent's challenge is threefold: First, it must accurately determine where the car is located on the track. Its observations are accurate, however, because of the discretization, multiple actual positions map to the same observation (See Section \ref{sec:observations}). Second, it needs to estimate whether the driver is attentive or not. Third, it must decide on an appropriate action choice, taking into account future consequences of the chosen action. In order to achieve this, at each planning step, the agent can search ahead by simulating experiences based on its belief of the state of the environment and the driver. Performing more searches means evaluating more possible scenarios. In turn, more evaluated scenarios enable the agent to form a better policy and therefore selecting the better next action. However, after some amount of searches, the information gain from additional searches decreases and performance is expected to converge \parencite{pomcp}. The number of searches is directly related to the planning time. Planning time is a limiting factor for the application of a planner. Thus, knowing after how many searches the performance converges, and therefore being able to choose the minimal number of searches to perform for a good result, is critical. Below, the convergence behavior of the three evaluated agents is assessed for the scenarios of the simple driver model, the driver model with steering overcorrection after regaining attentiveness, and the driver with overcorrection and noise.
+The agent's challenge is threefold: First, it must accurately determine where the car is located on the track. Its observations are accurate, however, because of the discretization, multiple actual positions map to the same observation (See Section~\ref{sec:observations}). Second, it needs to estimate whether the driver is attentive or not. Third, it must decide on an appropriate action choice, taking into account future consequences of the chosen action. In order to achieve this, at each planning step, the agent can search ahead by simulating experiences based on its belief of the state of the environment and the driver. Performing more searches means evaluating more possible scenarios. In turn, more evaluated scenarios enable the agent to form a better policy and therefore selecting the better next action. However, after some amount of searches, the information gain from additional searches decreases and performance is expected to converge \parencite{pomcp}. The number of searches is directly related to the planning time. Planning time is a limiting factor for the application of a planner. Thus, knowing after how many searches the performance converges, and therefore being able to choose the minimal number of searches to perform for a good result, is critical. Below, the convergence behavior of the three evaluated agents is assessed for the scenarios of the simple driver model, the driver model with steering overcorrection after regaining attentiveness, and the driver with overcorrection and noise.
 
 \subsection{Simple driver model}
 
 % TODO: Actually mention when convergence occurs
-For the experiment with the simple driver model, using the full action space, utilizing only the subset of minor steering actions, and employing preferred actions lead to similar convergence behavior. Already with just 200 searches during planning, the average cumulative reward is above 600 for all agents. However, as it can be seen in Table \ref{tab:simple_terminal}, the number of runs that lead to a terminal state is high. In the runs resulting in a terminal state, the agents are able to assist the drivers well at first but suffer from belief divergence after some time. Then, their belief deviates noticably from the true states of the environment and the driver. The agents are not able anymore to make accurate assumptions about the state of the environment and whether the driver is attentive or not. Thus, they are rendered unable to decide on the right actions to keep the car centered. 
+For the experiment with the simple driver model, using the full action space, utilizing only the subset of minor steering actions, and employing preferred actions lead to similar convergence behavior. Already with just 200 searches during planning, the average cumulative reward is above 600 for all agents. However, as it can be seen in Table~\ref{tab:simple_terminal}, the number of runs that lead to a terminal state is high. In the runs resulting in a terminal state, the agents are able to assist the drivers well at first but suffer from belief divergence after some time. Then, their belief deviates noticably from the true states of the environment and the driver. The agents are not able anymore to make accurate assumptions about the state of the environment and whether the driver is attentive or not. Thus, they are rendered unable to decide on the right actions to keep the car centered. 
 
 \input{sections/plots/sims_norm_plot}
 
@@ -58,81 +58,43 @@ Using preferred actions results in only one terminal state for experiments with 
 
 \subsection{Steering over-correction}
 
+% TODO: Explain why the reduced actions do not lead to sufficiently better results
+
 % TODO: Include Max values. They are similar to the average values in the simple case. The agent just fails to predict the state correctly more often.
 
 % TODO: Tchnically, the agent can never directly know when a driver's state change occurs but only after the driver executes the first action in the new state. 
-A driver that overcorrects after regaining attentiveness by steering too strongly in her first attentive action presents a greater challenge for the agents. When choosing its next action, an agent also need to account for the driver's possible overcorrection. As the amount of overcorrection is stochastic (see Section \ref{sec:driver_model}), not every particle with an attentive driver state leads to the same action anymore. The complexity of the planning problem is higher. Generally, more searches are needed in order to evaluate a greater variety of possible states from the belief while planning.
-
-As it can be seen in Figure \ref{fig:searches_over}, the agent using preferred actions converges sufficiently earlier towards a good policy than the other two agents. This is mainly caused by a high number of terminal states reached during evaluation runs of the agents with full and reduced action spaces (see Table \ref{tab:over_terminal}). For example, with 750 searches, the agent using preferred actions receives an average cumulative reward of 883.43 with only 10 runs ending in a terminal state, while the other agents each reach terminal states in 42 runs. The agent with an unrestricted action space yields a return of 464.89, and the one with a restricted action space gains 473.67. In contrast to the experiment with the simple driver model, the terminal states are caused almost exclusively by particle deprivation after a formerly distracted driver becomes attentive again and overcorrects. If the agent did not account for this possibility properly, no matching node for the observation resulting from the overcorrection can be found in the agent's tree. In this case, the agent cannot recover and has to fall back to uniformly random action selection (see Section \ref{sec:action_selection}), which usually leads to a terminal state after just a few actions. % TODO: Just say the agent just stops acting and the episode ends when the driver becomes distracted again?
-
-The agent with preferred actions is able to form a more accurate belief of the environment's true state with fewer searches than the other two agents. Due to the use of preferred actions, the agent does not start with equal initial values at new nodes during rollouts. Instead, the actions are weighted with domain knowledge (see Section \ref{sec:action_selection}). The likelihood of selecting an action during rollout is bound to its intensity, with less severe steering actions being preferred as the need for strong steering is scarce on a highway track. Assuming the underlying assumption of the introduced domain knowledge is valid and the return is confirmed to be higher for a preferred action during initial searches, the exploration is kept to a minimum. If the reward does not drop sufficiently, the agent is allowed to exploit on the preferred action. It is like lowering the threshold of trustworthyness for preferred actions; they need less initial confirmation than others. Thereby, a preferred  action, if successful initially, is evaluated relatively often, even with fewer searches. At each evaluation, the simulated next state will be added to the belief of the node representing the chosen action and its corresponding observation. Consequently, nodes connected with the preferred actions hold a more comprehensive belief. This results in a lower chance of particle deprivation. The advantage of the agent using preferred actions becomes clearer than before during this experiment.
-
-% the rollout phase, the agent will use this action to simulate a possible trajectory starting from a sampled belief state. At the node representing the chosen action and its corresponding observation, the simulated next state will be added to the belief. 
-
-% resulting 
-
-% add a new node for the action and the corresponding observation after simulating a possible trajectory starting with this action (see Section \section{pomcp}).
-
-
-
-% The advantage of the agent using preferred actions becomes clearer than before during this experiment. 
-
-% The agent with the full action space initially values every action equally. Actions with a low payoff are incrementally selected less by the UCB1 action selection (see Section \ref{sec:pomcp}). However, some exploration is necessary. Therefore, many potentially unlikely extreme scenarios are simulated during planning. Thereby, the amount of searches with more likely high-rewarding minor actions is reduced. Particle deprivation can occur. Particle injection helps but is no definite cure. Because of this, this agent needs many searches to be able to account for overcorrection when a distracted driver becomes attentive again. At 750 searches, the agent fails to do so. 34 of the terminal states occur when the driver is attentive. In the other cases, the value of extreme actions is overestimated, which leads to extreme actions in the real environment and results in driving off the track. % The end terminal state is less important than when the agent started cheating
-
-% Mention how many times the agents lose track after the driver oversteering. And that they use random action selection for some time after
-
-% 
-
-
-
-
-
-% How often does the planner lose track and use random action selection? 
-
-% The overcorrection is relative to the amount the driver needs to correct the steering. 
-% Preferred gets a better result and can keep
-
-
-% The reduced action space for the agent with an action space subset is intended to mitigate this. The need for extreme actions is scarce. Only evaluating minor actions 
-
-
-% However, whenever a distracted driver regains attentiveness, and overcorrects her steering, the agent may be required to counteract with a sufficiently strong steering action. When this happens 
- 
-
-
-
-
-% in the belief states 
-
-
-% Due to the overcorrection, 
-
-
-% having a particle in the belief that represents a driver who becomes attentive again in the the exact moment the real driver regains its attentiveness
-
-
-% a driver  is more important as  
-
-
-
-% it is more difficult for the agent to keep a consistent belief
-
-% Consequently, the performance of the agents 
+A driver that overcorrects after regaining attentiveness by steering too strongly in her first attentive action presents a greater challenge for the agents. When choosing its next action, an agent also need to account for the driver's possible overcorrection. The amount of overcorrection is stochastic (see Section~\ref{sec:driver_model}). Attentive drivers are less predictable when they overcorrect. Rather than just performing the optimal steering action, different overcorrection intensities can lead to a variety of actions at the same position. The complexity of the planning problem is higher. Generally, more searches are needed in order to evaluate a greater variety of possible states from the belief while planning.
 
 \input{sections/plots/sims_over_plot}
 
 \input{sections/tables/terminal_over}
 
+As it can be seen in Figure~\ref{fig:searches_over}, the agent using preferred actions converges sufficiently earlier towards a good policy than the other two agents. This is mainly caused by a high number of terminal states reached during evaluation runs of the agents with full and reduced action spaces (see Table~\ref{tab:over_terminal}). For example, with 750 searches, the agent using preferred actions receives an average cumulative reward of 883.43 with only 10 runs ending in a terminal state, while the other agents each reach terminal states in 42 runs. The agent with an unrestricted action space yields a return of 464.89, and the one with a restricted action space gains 473.67. In contrast to the experiment with the simple driver model, the terminal states are caused almost exclusively by particle deprivation after a formerly distracted driver becomes attentive again and overcorrects. If the agent did not account for this possibility properly, no matching node for the observation resulting from the overcorrection can be found in the agent's planning tree. In this case, the agent cannot recover and has to fall back to uniformly random action selection (see Section~\ref{sec:action_selection}), which usually leads to a terminal state after just a few actions. % TODO: Just say the agent just stops acting and the episode ends when the driver becomes distracted again?
+
+The agent with preferred actions is able to form a more accurate belief of the environment's true state with fewer searches than the other two agents. Due to the use of preferred actions, the agent does not start with equal initial values at new nodes during rollouts. Instead, the actions are weighted with domain knowledge (see Section~\ref{sec:action_selection}). The likelihood of selecting an action for a rollout is bound to its intensity, with less severe steering actions being preferred as the need for strong steering is scarce on a highway track. Assuming the underlying assumption of the introduced domain knowledge is valid, and the return is confirmed to be higher for a preferred action during initial searches, then exploration is kept to a minimum. If the reward does not drop sufficiently, the agent is allowed to exploit on the preferred action. It is like lowering the threshold of trustworthyness for preferred actions; they need less initial confirmation than others. Thereby, a preferred  action, if successful initially, is evaluated relatively often, even with fewer searches. At each evaluation, the simulated next state will be added to the belief of the node representing the chosen action and a resulting observation. Consequently, nodes connected with the preferred actions hold a more comprehensive belief. This results in a lower chance of particle deprivation. The advantage of the agent using preferred actions becomes clearer than before during this experiment.
+
+% TODO:
+% - How often does the planner lose track and use random action selection? 
+% - Why is the reduced action space driver not better than the full one? This makes zero sense. But I have to explain it somehow
+% - Mention convergence behavior explicitly
+
 \subsection{Steering over-correction and noise}
+
+The noise added to the driver's actions is added with the goal to make the driving more realistic, and thereby also more unpredictable and difficult to plan with. However, the performance of the agents in the experiment with over correction and noise is very similar to the experiment with overcorrection but without noise. Surprisingly, all agents even receive slightly higher average cumulative rewards and show a similar convergence behavior. The agent using preferred actions converges to a reward of roughly 960 with 1000 searches or more. The agent with a full action range reaches peak performance at 5000 searches with a return of about 860, staying at roughly the same level subsequently. The agent with the small action space converges at around 960, with 7500 searches and more. The actual convergence probably occurs with somewhere between 5000 and 7500 searches but no experiment was conducted with a number of searches in between.
 
 \input{sections/plots/sims_noise_plot}
 
 \input{sections/tables/terminal_noise}
 
+Table~\ref{tab:noise_terminal} shows that the number of terminal states reached during experiment runs are comparable for the two agents with unweighted actions. For the agent using preferred actions, the number of terminal states reached at 750 searches is twice as high. In most of these cases, the cause for this is a combination of a strong overcorrection with a high driver action noise. This combination is unlikely but possible with the random nature of the process. Despite this deviation, the data is very similar to the experiment without noise. The most likely reason for this is the discretization applied to the driver's actions (see Section~\ref{sec:discretization}). Low noise that is added to an action is often lost during discretization. Resulting is the same action as it would have been before adding the noise.
 
 % TODO: Add plot with all three results for the noise scenario for comparison?
 
-\section{Comparison of driving trajectories}
+\section{Mean lane centeredness}
+
+The reward reflects how well the agents manage to keep the car centered in lane and angled to the road trajectory. From the last section, it is clear that the number of simulations has a strong impact on the agents' performance. However, the last section only showcased this based on the average cumulative rewards. Figure \ref{fig:lane_centeredness} shows the average absolute lane centeredness (distance to the lane center, no matter if left or right of lane center) at every time step in the last experiment with driver action noise and a driver that oversteers after regaining attentiveness. The runs ending in terminal states are taken into account until the terminal state occurs. For the remaining actions, they are ignored in the graphs. It is therefore important to consider them (see Table \ref{tab:noise_terminal}). 
+
+With just 200 searches, most runs end in terminal states. What is striking is that the average lane centeredness is quite volatile and often drifts off into the extreme. Neither of the three agents is consistently capable of keeping the car centered in the lane. The graph for 500 searches already suggests an improvement. There are less extreme values and the standard errors are lower. The agents with unweighted actions appear to perform better than the one with preferred actions at first glance. However, still almost all runs of the two agents with unweighted actions, and only about half of the runs of the agent with preferred actions lead to terminal states. The performance of the agent with preferred actions is arguably better. Using 1000 searches marks the start of convergence for the agent with preferred actions. The average lane centeredness is consistently lower than with 500 searches throughout the experiment. The agent using a reduced set of actions performs better than with 500 searches, leading to less variation in the lane centeredness and fewer terminal states reached during the experiment. The lane centering of the agent with the full action range is virtually unchanged. When 10000 searches are performed during planning, all agents have converged to their peak performance. The different agents lead to similar results in this case. The agent with preferred actions appears to have a higher variance in its lane centeredness; sometimes, it is comparatively high, followed by periods where the agent achieves lower average values than the other agents. A possible explanation is that this agent accounts better for the times it has to purposefully deviate from the center of the lane, in order to achieve better values subsequently. However, this cannot definitely be concluded.
 
 % angular jerkiness
 % The angular jerkiness is defined as the standard deviation in the change in steering action.
@@ -142,4 +104,5 @@ The agent with preferred actions is able to form a more accurate belief of the e
 % mean lane centeredness
 
 % TODO: Show 10 - 500 - 1000 (point of convergence) for noise scenario?
-\input{sections/plots/lane_center_plot}
+
+\input{sections/plots/lane_center_plot_2}

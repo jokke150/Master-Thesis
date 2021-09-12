@@ -1,0 +1,117 @@
+\begin{figure}[htbp]
+    \centering
+    \centerfloat
+    \begin{tikzpicture}
+    \begin{groupplot} [
+        group style={
+            group name=my plots,
+            group size=4 by 1,
+            ylabels at=edge left,
+            yticklabels at=edge left,
+            horizontal sep=10pt
+            },
+        width=4.2cm,
+        height=8cm,
+        ylabel={Number of actions},
+        ytick={1, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000},
+        xmajorgrids=true,
+        yminorticks=false,
+        enlargelimits=false,
+        xtick={0.1212121212, 0.2424242424, 0.3636363636},
+        xticklabels={0.5, 1.0, 1.5},
+        xmin=0.0202020202,
+        xmax=0.4606060606,
+        xlabel style={font=\footnotesize, xshift = 1.5cm},
+        ylabel style={font=\footnotesize},
+        xticklabel style={font=\footnotesize},
+        yticklabel style={font=\footnotesize},
+        legend style={
+            legend columns=3, 
+            font=\footnotesize,
+            at={(1.05,-0.2)},
+            anchor=north
+        }
+    ]
+    \nextgroupplot[title=200 searches]
+    \addplot [solid, color=myblue, no marks, each nth point=10, filter discard warning=false, unbounded coords=discard] table [y=Count, x=Average Distance, col sep=comma] {data/Values/200 - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+
+    \addplot [solid, color=myred, no marks, each nth point=10, filter discard warning=false, unbounded coords=discard] table [y=Count, x=Average Distance, y error=Average Distance SE, col sep=comma] {data/Values/200 - Reduced Actions - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+
+    \addplot [solid, color=mygreen, no marks, each nth point=10, filter discard warning=false, unbounded coords=discard] table [y=Count, x=Average Distance, y error=Average Distance SE, col sep=comma] {data/Values/200 - Preferred - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 25 - exp const 1.5 - reduced values.csv};
+
+    \addplot [name path=upper1,draw=none] table [y=Count, x expr=\thisrow{Average Distance}+\thisrow{Average Distance SE}, col sep=comma] {data/Values/200 - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+    \addplot [name path=lower1,draw=none] table[y=Count, x expr=\thisrow{Average Distance}-\thisrow{Average Distance SE}, col sep=comma] {data/Values/200 - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv}; 
+    \addplot [fill=myblue!25] fill between[of=upper1 and lower1];
+
+    \addplot [name path=upper2,draw=none] table [y=Count, x expr=\thisrow{Average Distance}+\thisrow{Average Distance SE}, col sep=comma] {data/Values/200 - Reduced Actions - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+    \addplot [name path=lower2,draw=none] table[y=Count, x expr=\thisrow{Average Distance}-\thisrow{Average Distance SE}, col sep=comma] {data/Values/200 - Reduced Actions - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+    \addplot [fill=myred!25] fill between[of=upper2 and lower2];
+
+    \addplot [name path=upper3,draw=none] table [y=Count, x expr=\thisrow{Average Distance}+\thisrow{Average Distance SE}, col sep=comma] {data/Values/200 - Preferred - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 25 - exp const 1.5 - reduced values.csv};
+    \addplot [name path=lower3,draw=none] table[y=Count, x expr=\thisrow{Average Distance}-\thisrow{Average Distance SE}, col sep=comma] {data/Values/200 - Preferred - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 25 - exp const 1.5 - reduced values.csv};
+    \addplot [fill=mygreen!25] fill between[of=upper3 and lower3];
+
+    \nextgroupplot[xlabel={Average absolute distance to lane center (in meters).}, title=500 searches]
+    \addplot [solid, color=myblue, no marks, each nth point=10, filter discard warning=false, unbounded coords=discard] table [y=Count, x=Average Distance, col sep=comma] {data/Values/500 - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+    \addlegendentry{All actions}
+
+    \addplot [solid, color=myred, no marks, each nth point=10, filter discard warning=false, unbounded coords=discard] table [y=Count, x=Average Distance, y error=Average Distance SE, col sep=comma] {data/Values/500 - Reduced Actions - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+    \addlegendentry{Action subset}
+
+    \addplot [solid, color=mygreen, no marks, each nth point=10, filter discard warning=false, unbounded coords=discard] table [y=Count, x=Average Distance, y error=Average Distance SE, col sep=comma] {data/Values/500 - Preferred - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 25 - exp const 1.5 - reduced values.csv};
+    \addlegendentry{Preferred actions}
+
+    \addplot [name path=upper1,draw=none] table [y=Count, x expr=\thisrow{Average Distance}+\thisrow{Average Distance SE}, col sep=comma] {data/Values/500 - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+    \addplot [name path=lower1,draw=none] table[y=Count, x expr=\thisrow{Average Distance}-\thisrow{Average Distance SE}, col sep=comma] {data/Values/500 - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv}; 
+    \addplot [fill=myblue!25] fill between[of=upper1 and lower1];
+
+    \addplot [name path=upper2,draw=none] table [y=Count, x expr=\thisrow{Average Distance}+\thisrow{Average Distance SE}, col sep=comma] {data/Values/500 - Reduced Actions - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+    \addplot [name path=lower2,draw=none] table[y=Count, x expr=\thisrow{Average Distance}-\thisrow{Average Distance SE}, col sep=comma] {data/Values/500 - Reduced Actions - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+    \addplot [fill=myred!25] fill between[of=upper2 and lower2];
+
+    \addplot [name path=upper3,draw=none] table [y=Count, x expr=\thisrow{Average Distance}+\thisrow{Average Distance SE}, col sep=comma] {data/Values/500 - Preferred - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 25 - exp const 1.5 - reduced values.csv};
+    \addplot [name path=lower3,draw=none] table[y=Count, x expr=\thisrow{Average Distance}-\thisrow{Average Distance SE}, col sep=comma] {data/Values/500 - Preferred - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 25 - exp const 1.5 - reduced values.csv};
+    \addplot [fill=mygreen!25] fill between[of=upper3 and lower3];
+
+    \nextgroupplot[title=1000 searches]
+    \addplot [solid, color=myblue, no marks, each nth point=10, filter discard warning=false, unbounded coords=discard] table [y=Count, x=Average Distance, col sep=comma] {data/Values/1000 - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+
+    \addplot [solid, color=myred, no marks, each nth point=10, filter discard warning=false, unbounded coords=discard] table [y=Count, x=Average Distance, y error=Average Distance SE, col sep=comma] {data/Values/1000 - Reduced Actions - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+
+    \addplot [solid, color=mygreen, no marks, each nth point=10, filter discard warning=false, unbounded coords=discard] table [y=Count, x=Average Distance, y error=Average Distance SE, col sep=comma] {data/Values/1000 - Preferred - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 25 - exp const 1.5 - reduced values.csv};
+
+    \addplot [name path=upper1,draw=none] table [y=Count, x expr=\thisrow{Average Distance}+\thisrow{Average Distance SE}, col sep=comma] {data/Values/1000 - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+    \addplot [name path=lower1,draw=none] table[y=Count, x expr=\thisrow{Average Distance}-\thisrow{Average Distance SE}, col sep=comma] {data/Values/1000 - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv}; 
+    \addplot [fill=myblue!25] fill between[of=upper1 and lower1];
+
+    \addplot [name path=upper2,draw=none] table [y=Count, x expr=\thisrow{Average Distance}+\thisrow{Average Distance SE}, col sep=comma] {data/Values/1000 - Reduced Actions - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+    \addplot [name path=lower2,draw=none] table[y=Count, x expr=\thisrow{Average Distance}-\thisrow{Average Distance SE}, col sep=comma] {data/Values/1000 - Reduced Actions - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+    \addplot [fill=myred!25] fill between[of=upper2 and lower2];
+
+    \addplot [name path=upper3,draw=none] table [y=Count, x expr=\thisrow{Average Distance}+\thisrow{Average Distance SE}, col sep=comma] {data/Values/1000 - Preferred - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 25 - exp const 1.5 - reduced values.csv};
+    \addplot [name path=lower3,draw=none] table[y=Count, x expr=\thisrow{Average Distance}-\thisrow{Average Distance SE}, col sep=comma] {data/Values/1000 - Preferred - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 25 - exp const 1.5 - reduced values.csv};
+    \addplot [fill=mygreen!25] fill between[of=upper3 and lower3];
+
+    \nextgroupplot[title=10000 searches]
+    \addplot [solid, color=myblue, no marks, each nth point=10, filter discard warning=false, unbounded coords=discard] table [y=Count, x=Average Distance, col sep=comma] {data/Values/10000 - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+
+    \addplot [solid, color=myred, no marks, each nth point=10, filter discard warning=false, unbounded coords=discard] table [y=Count, x=Average Distance, y error=Average Distance SE, col sep=comma] {data/Values/10000 - Reduced Actions - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+
+    \addplot [solid, color=mygreen, no marks, each nth point=10, filter discard warning=false, unbounded coords=discard] table [y=Count, x=Average Distance, y error=Average Distance SE, col sep=comma] {data/Values/10000 - Preferred - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 25 - exp const 1.5 - reduced values.csv};
+
+    \addplot [name path=upper1,draw=none] table [y=Count, x expr=\thisrow{Average Distance}+\thisrow{Average Distance SE}, col sep=comma] {data/Values/10000 - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+    \addplot [name path=lower1,draw=none] table[y=Count, x expr=\thisrow{Average Distance}-\thisrow{Average Distance SE}, col sep=comma] {data/Values/10000 - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv}; 
+    \addplot [fill=myblue!25] fill between[of=upper1 and lower1];
+
+    \addplot [name path=upper2,draw=none] table [y=Count, x expr=\thisrow{Average Distance}+\thisrow{Average Distance SE}, col sep=comma] {data/Values/10000 - Reduced Actions - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+    \addplot [name path=lower2,draw=none] table[y=Count, x expr=\thisrow{Average Distance}-\thisrow{Average Distance SE}, col sep=comma] {data/Values/10000 - Reduced Actions - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 5 values.csv};
+    \addplot [fill=myred!25] fill between[of=upper2 and lower2];
+
+    \addplot [name path=upper3,draw=none] table [y=Count, x expr=\thisrow{Average Distance}+\thisrow{Average Distance SE}, col sep=comma] {data/Values/10000 - Preferred - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 25 - exp const 1.5 - reduced values.csv};
+    \addplot [name path=lower3,draw=none] table[y=Count, x expr=\thisrow{Average Distance}-\thisrow{Average Distance SE}, col sep=comma] {data/Values/10000 - Preferred - Over Correct + Noise - 50 runs - 1000 actions - discount horizon 25 - exp const 1.5 - reduced values.csv};
+    \addplot [fill=mygreen!25] fill between[of=upper3 and lower3];
+    \end{groupplot}
+    \end{tikzpicture}
+    \caption[Mean lane centeredness for the different agents]{Mean lane centeredness for the different agents during experiments with 1000 actions, with oversteering and driver action noise, using  200, 500, 1000, or 10000 searches while planning. In principle, a lower distance is favorable. Nevetheless, it can be better to deviate from the lane center at times in order to reach an overall better performance. The shaded area shows the standard error. \emph{Note: This figure is intended to showcase the difference in lane centeredness between experiments with different numbers of searches for a particular agent. It is not suited to compare the agents with each other without taking into account the different number of terminal runs during the experiments (see Table~\ref{tab:noise_terminal}). The two agents without preferred actions appear to have lower mean distances than the agent using preferred actions in the first graphs. However, many of their runs end in terminal states. After the terminal state is reached, these runs do not produce additional data and are therefore not reflected anymore in these graphs.}}
+    \label{fig:lane_centeredness}
+\end{figure}
