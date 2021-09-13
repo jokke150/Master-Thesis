@@ -1,7 +1,6 @@
 \chapter{Methodology}
 \label{sec:problem}
 
-
 % TODO: Page 38 of Improving Sequential Decision Making in Human-In-The-Loop Systems
 
 % \begin{enumerate}
@@ -16,7 +15,12 @@
 
 \section{Lane keeping with a human in the loop as a POMDP}
 
-% TODO: Add overview picture
+\begin{figure}[ht]
+    \centerfloat
+    \includegraphics[width=1.2\linewidth]{figures/Components.pdf}
+    \caption{Solution approach overview}
+    \label{fig:overview}
+\end{figure}
 
 % TODO: Add: The agent can only recognize a state change of the driver after the driver has performed the first action in this state. This is because there are no observable clues about the duration of the driver's attentiveness and distraction.
 
@@ -158,6 +162,18 @@ The overall goal for the agent is to only assist the driver in keeping the car c
 \section{Solution approach using the POMCP algorithm}
 \subsection{Discretization}
 \label{sec:discretization}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/pomcp_continuous.pdf}
+\end{figure}
+
+% POMCP tree for a discrete POMDP (left), and for a POMDP with a
+% continuous observation space (right). Because the observation space is continuous,
+% each simulation creates a new observation node and the tree cannot extend deeper.
+
+% Why do we have to discretize with POMCP?
+% See (POMDP, Continuous, POMCPOW, POMCP-DOW, DPW, Thesis) SAFETY AND EFFICIENCY IN AUTONOMOUS VEHICLES THROUGH PLANNING WITH UNCERTAINTY
 
 \subsection{General POMCP definition}
 \label{sec:pomcp}
