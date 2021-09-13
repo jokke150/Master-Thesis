@@ -15,6 +15,8 @@
 
 \section{Lane keeping with a human in the loop as a POMDP}
 
+% TODO: Add state estimator + policy to agent? 
+% See (POMDP definition) Planning and acting in partially observable stochastic domains)
 \begin{figure}[ht]
     \centerfloat
     \includegraphics[width=1.2\linewidth]{figures/Components.pdf}
@@ -168,6 +170,9 @@ The overall goal for the agent is to only assist the driver in keeping the car c
     \includegraphics[width=0.8\textwidth]{figures/pomcp_continuous.pdf}
 \end{figure}
 
+% Solving continuous POMDPs
+% See (POMDP, POMCP, Thesis) Towards Human-Like Prediction and Decision-Makingfor Automated Vehicles in Highway Scenarios
+
 % POMCP tree for a discrete POMDP (left), and for a POMDP with a
 % continuous observation space (right). Because the observation space is continuous,
 % each simulation creates a new observation node and the tree cannot extend deeper.
@@ -223,4 +228,7 @@ Particle injection is used to increase the variance of the belief about the driv
 % This is strongly related to the particle deprivation problem described in Section~\ref{sec:particle_deprivation}. When the driver is in a distracted or attentive state, any number of remaining actions in this state below the maximum number (see Section~\ref{sec:driver_model}) could be valid and can therefore be part of the driver model states in the belief. In successive iterations, particles that represent drivers switching their state earlier than the true driver, and therefore change their steering behavior, are ruled out and removed from the belief. Thereby, after some iterations, driver model states that have the same or more remaining actions than the true state dominate the belief.
 
 % preferred actions = domain knowledge
+
+\subsection{Generative model}
+\label{sec:gen_model}
 
