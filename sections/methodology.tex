@@ -14,6 +14,7 @@
 % \end{enumerate}
 
 \section{Lane keeping with a human in the loop as a POMDP}
+\label{sec:lane_keeping_loop}
 
 % TODO: Add state estimator + policy to agent? 
 % See (POMDP definition) Planning and acting in partially observable stochastic domains)
@@ -29,6 +30,7 @@
 \subsection{Driving simulator TORCS}
 
 \subsubsection{State}
+\label{sec:state}
 
 % TODO: Define terminal state
 
@@ -162,13 +164,19 @@ The overall goal for the agent is to only assist the driver in keeping the car c
 \end{equation*}
 
 \section{Solution approach using the POMCP algorithm}
-\subsection{Discretization}
+\subsection{Action and observation space discretization}
 \label{sec:discretization}
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{figures/pomcp_continuous.pdf}
 \end{figure}
+
+Using POMCP with a continuous state is possible by discretizing the observation space \parencite{pomcp_continuous}.
+POMCP does not handle continuous observation spaces well. 
+
+% See (POMCP, Continuous) Continuous Real Time POMCP to Find-and-Follow People by a Humanoid Service Robot.pdf
+% Using continuous states in POMCPs requires us to 1) define the continuous states; 2) create a POMDP simulator that handles these states; and 3) assure that the observations are discretized. In continuous state space an exact position is used instead of grid cells. The actions and observations however always have to be discrete, otherwise the planner would have to take into account too many situations, since the policy tree could grow too wide and the values in the nodes would not converge. A balance of the observation discretization is important,because very small grid cells imply a higher resolution, but wide policy trees with lower probability of convergence to a good policy. In contrary lower detail can cause problems of precision in the planning, but increases probability of convergence.
 
 % Solving continuous POMDPs
 % See (POMDP, POMCP, Thesis) Towards Human-Like Prediction and Decision-Makingfor Automated Vehicles in Highway Scenarios
@@ -201,6 +209,9 @@ The overall goal for the agent is to only assist the driver in keeping the car c
     \includegraphics[width=1.2\textwidth]{figures/POMCP.pdf}
 \end{figure}
 
+% TODO: Illustrate belief tree
+% See Figure 1 in DESPOT
+
 \Gls{pomcp} constructs a search tree with nodes representing histories $h$ of actions and observations. At each node, $N(h)$ stores the number of times the represented history $h$ has been encountered, $V(h)$ is the node's value that is approximated by the average return of simulations starting at history $h$, and $B(h)$ represents the node's belief over the real environment's state. $B(h)$ is a collection of potential states where the likelihood of each state is given by the relative number of times it is included in the collection.
 
 If the belief at the node representing $h_{real}$ is empty, an initial state distribution $I$ is used to sample a start state $s$ for the search. Otherwise, $B(h_{real})$ is utilized. The search tree is then searched in two stages. First, in the case that the search tree already contains child nodes for all actions at the current history, UCB1 is used for the action selection. Exploration is achieved by increasing the value of rarely-tried actions by an exploration bonus. Second, when the tree is missing a node for a potential action at the current history, a rollout policy is used to select actions. In the most simple case, this means choosing uniformly random over the action space. In either case, the selected action is executed on the start state $s$, leading to a successive state $s'$, observation $o$, and reward $r$. The process is repeated with resulting successive states until a maximum depth of the tree is reached. Afterwards, the beliefs, counts, and values are updated at all nodes for the histories resulting from the UCB1 action selection, and the node for the first history resulting from the rollout policy. The belief is updated by adding the successive states $s'$ from the simulator to the collections $B(ho)$ in the nodes. If the maximum planning time has not yet been reached, another start state is sampled and the whole process repeats. When the time runs out, the action $a_{best}$ with the highest value at the current history $h_{real}$ is returned. After this action is executed in the real environment, with an observation $o_{last}$ the tree can be pruned. Only the nodes from history $h_{real}a_{best}o_{last}$ onward stay relevant as all other histories are rendered impossible.
@@ -208,7 +219,15 @@ If the belief at the node representing $h_{real}$ is empty, an initial state dis
 % TODO: Add particles as a construct (Or change particles everywhere else to "state in the belief")
 % See Algorithms for decision making book
 
+% PARTICLE FILTERS
+
 % One common approach is to use a particle filter, which represents the belief state as a collection of states. 10 Each state in the approximate belief is called a particle.
+
+%
+
+
+% The policy we examine is called UCB1, and it can be summed up by the principle of optimism in the face of uncertainty. That is, despite our lack of knowledge in what actions are best we will construct an optimistic guess as to how good the expected payoff of each action is, and pick the action with the highest guess. If our guess is wrong, then our optimistic guess will quickly decrease and we’ll be compelled to switch to a different action. But if we pick well, we’ll be able to exploit that action and incur little regret. In this way we balance exploration and exploitation.
+% https://jeremykun.com/2013/10/28/optimism-in-the-face-of-uncertainty-the-ucb1-algorithm/
 
 \subsection{Particle deprivation and particle injection}
 \label{sec:particle_deprivation}

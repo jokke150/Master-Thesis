@@ -28,6 +28,8 @@ The best combination of search horizon and exploration constant for the agent wi
 \section{Reward convergence behavior}
 % TODO: Rename to something more general?
 
+% TODO: Add planning time
+
 The agent's challenge is threefold: First, it must accurately determine where the car is located on the track. Its observations are accurate, however, because of the discretization, multiple actual positions map to the same observation (See Section~\ref{sec:observations}). Second, it needs to estimate whether the driver is attentive or not. Third, it must decide on an appropriate action choice, taking into account future consequences of the chosen action. In order to achieve this, at each planning step, the agent can search ahead by simulating experiences based on its belief of the state of the environment and the driver. Performing more searches means evaluating more possible scenarios. In turn, more evaluated scenarios enable the agent to form a better policy and therefore selecting the better next action. However, after some amount of searches, the information gain from additional searches decreases and performance is expected to converge \parencite{pomcp}. The number of searches is directly related to the planning time. Planning time is a limiting factor for the application of a planner. Thus, knowing after how many searches the performance converges, and therefore being able to choose the minimal number of searches to perform for a good result, is critical. Below, the convergence behavior of the three evaluated agents is assessed for the scenarios of the simple driver model, the driver model with steering overcorrection after regaining attentiveness, and the driver with overcorrection and noise.
 
 \subsection{Simple driver model}

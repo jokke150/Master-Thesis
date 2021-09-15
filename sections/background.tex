@@ -68,20 +68,15 @@ The optimal policy $\pi^*$ maximizes $V^\pi(b_0)$. For any POMDP there exists at
 
 \section{Key challenges}
 
-
-
-
-% As we have discussed above, POMDPs are affected by the curse of history; their computational complexity grows exponentially with the planning horizon. A second challenge, shared with MDPs, is the curse of dimensionality. The size of the state space grows exponentially with the number of state variables. POMDPs, in particular, need to plan on a (|S| − 1)-dimensional continuous belief space. If we were to discretize this belief space, the number of possible beliefs would grow exponentially with the number of states. In this subsection, we present some of the existing literature to overcome these challenges and to solve POMDPs approximately. We focus here on offline approaches, where the optimal action is approximately calculated for all possible beliefs before any execution takes place. The next subsection will cover online approaches, which interleave execution and planning. The main advantage of offline methods is a faster policy execution, since no further planning is required. Approximate solution methods for POMDPs can be classified into value-based and policy-based.
-
-
 \subsection{Curse of dimensionality and curse of history}
+\label{sec:curses}
 
-Computing an optimal policy for a POMDP is challenging for two distinct but interdependent reasons \parencite{pomdp_curses}. On the one hand, there is the so-called curse of history: Finding an optimal policy is like searching through the space of possible action-observation histories. The number of distinct histories grows exponentially with the size of the time horizon. Therefore, planning further into the future increases the computation complexity exponentially. While finding an optimal policy can be relatively easy for short histories, it becomes computationally infeasible for larger time horizons. On the other hand, there is the curse of dimensionality: The belief space is a $|S|$-dimensional. Therefore, the size of the belief space, representing the number of states in a POMDP, grows exponentially with $|S|$.
+Computing an optimal policy for a POMDP is challenging for two distinct but interdependent reasons \parencite{pomdp_curses}. On the one hand, there is the so-called curse of history: Finding an optimal policy is like searching through the space of possible action-observation histories. The number of distinct histories grows exponentially with the size of the time horizon. Therefore, planning further into the future increases the computation complexity exponentially. While finding an optimal policy can be relatively easy for short histories, it becomes computationally infeasible for larger time horizons. On the other hand, there is the curse of dimensionality: The belief space is ($|S|$-dimensional. Therefore, the size of the belief space, representing the number of states in a POMDP, grows exponentially with $|S|$.
 
-The task of finding an optimal policy for a finite POMDP is PSPACE-complete \parencite{pomdp_complex}. Therefore, solving POMDP to optimality is computationally infeasible with a large state space or time horizon. For this reason, approximate algorithms are often applied. 
+The task of finding an optimal policy for a finite horizon POMDP is PSPACE-complete \parencite{pomdp_complex}. Solving POMDP to optimality is computationally infeasible with a large state space or time horizon. For this reason, approximate algorithms are often applied. 
 
 \subsection{Unknown transition and observation probabilities}
-
+\label{sec:gen_model_intro}
 For many problems, it is difficult or impossible to know the probability distributions $T$ or $Z$ explicitly. This is also the case for the shared control lane keeping scenario assessed in this thesis. Neither the transition probabilities, nor the observation probabilities are known a priori. The belief update method using Bayes' theorem presented in Equation \ref{eq:bayes_update} is not computable without knowing the probabily distributions explicitly. However, exact updates are too complex for problems with a large state space in any case \parencite{pomcp}. Some solution approaches circumvent the problem of unknown transition and observation probability distributions by only requiring a generative model that can sample state and observation transitions. A generative model can stochastically generate a successor state, reward, and observation, given the current state and action. Thereby, it implicitly defines the transition and observation probabilities, even if they are not explicitly known. The generative model used in this thesis is described in detail in Section \ref{sec:gen_model}.
 
 % \subsection{Exploration versus exploitation}
@@ -95,9 +90,7 @@ For many problems, it is difficult or impossible to know the probability distrib
 % Planning: Computational process that takes a model as input and produces or improves a policy for interacting with the modeled environment.
 % Learning: Whereas planning methods use simulated experience generated by a model, learning methods use real experience generated by the environment.
 
-\subsection{Offline and online solvers}
-
-% Generally, POMDP solver can be classified into two categories, online solver and offline solver. Since the traffic environments are nondeterministic and the dimension of the motion planning problem for autonomous driving is quite large, online solver behaves much better to duel with the uncertain environment and huge observation space [16].
+\subsection{Overview of aproximate POMDP solvers}
 
 \begin{figure}[htbp]
     \centering
@@ -105,70 +98,61 @@ For many problems, it is difficult or impossible to know the probability distrib
     \caption{Comparison of offline and online solving procedure}
 \end{figure}
 
-% TODO: REFINE
-
 \noindent
-There are two general approaches to solve POMDP: offline and online. Online solvers compute the optimal policy prior to execution for all possible future scenarios. Their advantage is that once the policy is found, its the application does only have a very minimal, negligible time overhead. However, offline planning is hard to scale to complex problems as the number of possible future scenarios grows exponentially with the size of the time horizon (curse of history). Furthermore, while the performance for small to medium sized POMDP can be quite good, computing the policy may take a very long time, and even small changes in the dynamics of the environment require a full recomputation \parencite{online_pomdp}. Online solvers interleave planning and plan execution. At every time step, only the current belief is considered to compute the next optimal action by searching ahead until a certain depth is reached. On the one hand, the scalability is greatly increased. On the other hand, sufficiently more online computation than with offline planning is required. The amount of available online planning time at each time step limits the performance. 
+There are two general approaches to solve POMDP: offline and online. Online solvers compute the optimal policy prior to execution for all possible future scenarios. Their advantage is that once the policy is found, policy execution is fast as there isonly a very minimal, negligible time overhead. However, offline planning is hard to scale to complex problems as the number of possible future scenarios grows exponentially with the size of the time horizon (curse of history). Furthermore, while the performance for small to medium sized POMDP can be quite good, computing the policy may take a very long time, and even small changes in the dynamics of the environment require a full recomputation \parencite{online_pomdp}. Online solvers interleave planning and plan execution. At every time step, only the current belief is considered to compute the next optimal action by searching ahead until a certain depth is reached. On the one hand, the scalability is greatly increased. On the other hand, sufficiently more online computation than with offline planning is required. The amount of available online planning time at each time step limits the performance. 
 
-Because the state space 
+As discussed in Section \ref{sec:curses}, solving POMDP to optimality exactly is only feasible for small discrete POMDP. Larger POMDP are usually solved approximatelty. A wide range of offline and online approximate solvers is available. For discrete POMDP, most effective successful offline approximate solvers apply a form of \gls{pbvi}, where only a representative subset of the belief space is considered to approximate the value function \parencite{pomdp-point-based-value}. State-of the art methods include Perseus, and \gls{hsvi}. Perseus chooses belief states to consider by randomly sampling trajectories from an initial belief \parencite{pomdp_perseus}. It is sufficiently more compute efficient than PBVI but can suffer from a slow convergence behavior \parencite{pbvi-survey}. HSVI improves on Perseus potential slow convergence in large domains by constructing a belief search tree, maintaining the order in which beliefs are visited, in order to perform value updates in reverse order incrementally \parencite{solver_hsvi}.
 
-% TODO: Give examples for good offline solvers
+Even the most advanced offline solvers reach their limit when dealing with large POMDP. Moreover, the state space of the POMDP for the shared control lane keeping task considered in this thesis has many continuous state variables (see Section \ref{sec:state}). Most offline solvers are not suited to be used with continuous states. There have been offline methods proposed to solve continuous POMDP, for example in \cite{pomdp-cont-offline}, and \cite{pomdp-cont-offline-2}. However, they have only been used for problems with relatively few state variables and are not considered further in this thesis. 
 
-% TODO: Online solvers overview
-% See (POMDP, POMCP, Thesis) Towards Human-Like Prediction and Decision-Makingfor Automated Vehicles in Highway Scenarios
-% Generally, a search tree rooted at the current belief is constructed
-% by considering all possible actions and observations; the tree alternates layers with belief nodes and with action nodes (Figure 2.2a). The goal is to “smartly” explore the tree so that the value at the current belief is quickly and correctly estimated. Online POMDP algorithms interleave search steps with execution steps. As a consequence, the time available for planning is usually shorter than for offline approaches. Because of this, some online approaches leverage policies computed offline in order to speed up the search. After a search step is completed, the agent executes the best action from the current belief and receives an observation from the environment; the search procedure continues then from the new belief. Depending on the method used to explore the search tree, online POMDP algorithms are classified into three main groups: branch-and-bound pruning, heuristic search, and Monte Carlo sampling (Ross et al.,
-% 2008).
+When it comes to online solvers, the paradigm of only trying to find a good local policy for the current belief state makes them sufficiently more efficient. The general approach is to construct a search tree rooted at the current belief, evaluating all possible further actions and observations. The methods differ in how the tree is explored to efficiently generate a good approximately optimal action to perform at the current belief. After this action has been performed in the real environment, the agent receives a reward and observation. On this basis, it updates its belief and the process repeats from the new belief. 
 
-\subsection{Monte Carlo tree search solvers}
+Recently, very promising results have been obtained for large POMDP using Monte Carlo sampling. Exploring the entire search tree is not feasible for deep time horizons because of the curse of history and the curse of dimensionality (see Section \ref{sec:curses}). \gls{mcts} methods address this issue by using a generative model to sample state transitions and observations (see Section \ref{sec:gen_model_intro}). By doing so, only a subset of histories is considered. The curse of dimensionality can be overcome in a similar fashion. Instead of evaluating all belief states, the start states for the search tree are sampled from the belief space. The number of belief states to consider can thereby be drastically reduced. 
+
+% MCTS: The key idea is to evaluate each state in a search tree by the average outcome of simulations from that state.
+
+% Another important issue for online POMDP planning is belief representation. Most online POMDP algorithms, including the Monte Carlo sampling algorithms, explicitly represent the belief as a probability distribution over the state space. This severely limits their scalability on POMDPs with very large state spaces, because a single belief update can take time quadratic in the number of states. Notable exceptions are POMCP and DESPOT. Both represent the belief as a set of sampled states and do not perform belief update over the entire state space during the online search.
+
+\subsection{Online POMDP solving using Monte Carlo tree search}
+
+The approach of using Monte Carlo sampling for both the choice of evaluated histories and estimating the belief was first applied in the \Glsentryfull{pomcp} algorithm by \cite{pomcp}. POMCP constructs a search tree of sampled histories. Each node stores its estimated value and sampled states that it corresponds to. The estimate is given by the return gained from forward simulations using the generative model during which the node is visited. The exploration is controlled using the \gls{ucb1} \parencite{ucb1} algorithm for action selection. The key idea is to aproximate the belief space using the same set of states that have been encountered during the forward search. Instead of representing the belief as a probability distribution over the states, it is given by the collection of states at the nodes. The underlying assumption is that if a state is more likely, it will be visited more often during the sampled trajectories. The relative number of times a state occurs in the collection defines its probability. Using this belief representation alleviates POMCP from expensive belief update calculations. POMCP has successfully been applied to approximately solve large POMDP. It is the solver used in this thesis. A detailed definition follows in Section \ref{sec:pomcp}. 
+
+The \gls{despot} algorithm by \cite{despot} is a similar approach that can be seen as an evolution of POMCP. DESPOT is efficient as only a fixed number of sampled scenarios are considered. A scenario is a determinized trajectory in the belief tree that is defined in advance. At every depth of the belief tree, all actions but only a subset of resulting observations are considered. Thereby, the observation space is simplified. DESPOT's main advantage over POMCP is the ability to overcome POMCP's relatively poor worst-case behavior \parencite{pomcp-worst-case} caused by the UCB1 algorithm's tendency to overfit. DESPOT circumvents this by using regularization in the value function. Moreover, DESPOT is an anytime algorithm, building its tree incrementally. In addition to its value, at every node upper and lower bounds for its performance are maintained. First, a suboptimal policy is searched using heuristic search \parencite{solver_hsvi} and then it is incrementally improved upon. Branch-and-bound pruning is performed by pruning action nodes from the tree if their expected value is lower than the lower bound of another action. There are further extensions of DESPOT: HyPDESPOT is a parallelized version of DESPOT with significant performance enhancements \parencite{hyp-despot}. DESPOT-$\alpha$ further improves DESPOT's capability to handle very large observation and state spaces \parencite{despot-a}. And DESPOT-IS applies importance sampling to account for very rare events that are hard to sample \parencite{despot-is}. Unfortunately, DESPOT and its derivatives require the observation probability $Z$ to be explicitly known. This is not feasible for the shared control lane keeping task considered in this thesis.
+
+
+
+\subsection{Solving continuous POMDP}
+
+A continuous POMDP has continuous state, observation, and action spaces. This is the case for the scenario of lane keeping with a human in the loop that is examined in this thesis (see Section \ref{sec:lane_keeping_loop}). Hence, a solver that can handle continuous POMDP is required.
+
+The aforementioned algorithms POMCP and DESPOT can natively be applied for continuous state spaces \parencite{pomcp_continuous}. As both use a collection of sampled states as their belief representation, they do not have to be adjusted to be able to represent beliefs about continuous states. These can also just be added to the collection if they occur during sample trajectories. It is unlikely that two identical continuous states are inserted. Therefore, the individual count of a state in the belief is rendered meaningless. Nevertheless, if the agent samples multiple similar situations, the corresponding states are also similar. For the continuous case, the assumed probability of being in a certain state is be given by the number of belief states that are close to it.
+
+However, for continuous action and observation spaces the MCTS search tree used in POMCP and DESPOT degenerates. Only a single layer of nodes can be realized as every search leads to a new branch \parencite{online_pomdp_cont}. It is possible to discretize the action and observation spaces to bypass this limitation \parencite{pomcp_continuous}. Thereby, the continuous spaces are transformed into a discrete representation and the traditional methods are applicable. Action and observation discretization is performed in this thesis to be able to use POMCP. The details are discussed in Section \ref{sec:discretization}.
+
+Solvers that work with fully continuous POMDP without discretization have been developed. POMCPOW is an extension of POMCP using progressive widening \parencite{online_pomdp_cont}. It uses weighted belief updates
+and limits the amount of observations considered during planning. Observations are only gradually added to the lookahead tree as planning progresses. Another very recent approach is \gls{labecop} \parencite{online-cont-pomdp-2}. It is based on MCTS as well but avoids limiting the number of considered observations. As promising as these methods are, they again require the observation probabilities $Z$ to be known explicitly and are therefore not applicable to the problem addressed in this thesis.
+
+
+% LABECOP incrementally samples a set
+% of episodes H (b) , i.e. sequences of state-action-observation-
+% reward quadruples starting from the current belief b ∈ B to
+% compute an approximation of the optimal policy for b.
+% Key to LABECOP is the realisation that the episodes in
+% H (b) provide sufficient information to encode many different
+% sequences of beliefs starting from b and that these beliefs,
+% along with their approximated action values and corre-
+% sponding action-selection strategy, can be extracted from
+% H (b) on-the-fly during planning, without having to maintain
+% a lookahead-tree.
+
+
+% Approximate Solutions to POMDPs
+% See (POMDP, Continuous, POMCPOW, POMCP-DOW, DPW, Thesis) SAFETY AND EFFICIENCY IN AUTONOMOUS VEHICLES THROUGH PLANNING WITH UNCERTAINTY
+
+
+% Solving continuous POMDPs:
+% See Towards Human-Like Prediction and Decision-Making for Automated Vehicles in Highway Scenarios
 
 % See Monte Carlo Tree Search in (POMDP, Continuous, POMCPOW, POMCP-DOW, DPW, Thesis) SAFETY AND EFFICIENCY IN AUTONOMOUS VEHICLES THROUGH PLANNING WITH UNCERTAINTY
 
-% General purpose online algorithms for POMDPs have also been proposed. These algorithms are mostly derivatives of the MCTS algorithm for MDPs (Section 1.2.6). A conceptually straightforward way to solve a POMDP using MCTS is to apply it to the corresponding belief MDP. Indeed, many tree search techniques have been applied to POMDP problems in this way [76]. However, when the Bayesian belief update is used, this approach is computationally expensive.
-
-% A major improvement in efficiency came with the introduction of the partially observable Monte Carlo planning (POMCP) algorithm [87]. It is based on UCT, but can tackle problems many times larger than its predecessors because it uses state trajectory simulations, rather than full belief trajectories, to build the tree. Each node in the POMCP tree corresponds to an action- or observation-terminated history. At each iteration, a state is sampled from the current belief and simulated through the nodes that match the history as it is generated. Thus, the belief at each observation-terminated history node is effectively represented by the collection of states for the appropriate time step in the trajectories that match the history. This is similar to using a rejection sampling unweighted particle filter. It should be noted that when this thesis uses the term POMCP, it refers only to the UCT-based decision-making algorithm called PO-UCT by Silver, Huang, Maddison, et al. [87] and not to the belief update scheme that re-uses simulations from the planning stage.Determinized sparse partially observable tree (DESPOT) is a similar approach that attempts to achieve better performance by analyzing only a small number of random outcomes in the tree [92]. Additionally, an algorithm called adaptive belief tree (ABT) was designed specifically to accommodate changes in the environment without having to replan from scratch [57]. Some very recent methods, e.g. QMDP-Net [46], have attempted to solve POMDPs by training recurrent neural networks.
-
-
-% expanding the search tree fully over a large set of observations is infeasible except for shallow depths. In such cases, a better alternative may be to sample a subset of observations at each expansion and only consider beliefs reached by these sampled observations. This reduces the branching factor of the search and allows for deeper search within a set planning time. This is the strategy employed by Monte Carlo algorithms.
-
-
-% POMCP
-% Recently an online POMDP planning algorithm called POMCP has successfully scaled up to very 
-% large POMDPs [18]. POMCP, which is based on Monte Carlo tree search, tries to break the two
-% curses by sampling states from the current belief and sampling histories with a black-box simula-
-% tor. It uses the UCT algorithm [9] to control the exploration-exploitation trade-off during the online
-% lookahead search. However, UCT is sometimes overly greedy and suffers the worst-case perfor-
-% mance of Ω(exp(exp(...exp(1) ...)))1 samples to find a sufficiently good action [4].
-
-% DESPOT
-% This paper presents a new algorithm for online POMDP planning. It enjoys the same strengths
-% as POMCP—breaking the two curses through sampling—but avoids POMCP’s extremely poor
-% worst-case behavior by evaluating policies on a small number of sampled scenarios [13]. In each
-% planning step, the algorithm searches for a good policy derived from a Determinized Sparse Par-
-% tially Observable Tree (DESPOT) for the current belief, and executes the policy for one step. A
-% DESPOT summarizes the execution of all policies under K sampled scenarios. It is structurally
-% similar to a standard belief tree, but contains only belief nodes reachable under the K scenarios
-
-% The general concept of online POMDP planning is that the solver computes the next optimal
-% action based on the current belief state by searching in a certain depth ahead. DESPOT
-% adopts this concept and improves the computational efficiency by shrinking the observation
-% space.
-
-% In order to do an efficient search in a large and deep belief tree, it is pruned and transferred 
-% to Determinized Sparse Partially Observable Tree. The construction of DESPOT is sampled by the 
-% K scenarios, which are shown as dots in the figure. A scenario is a determinized simulation 
-% trajectory from the root of the tree. Each Q-state maintains the scenarios from its ancestor.
-% And the observation is determinized by the randomly sampled scenarios. Each depth of the tree 
-% can be regarded as one time-step forward simulation of the model. Thus the observation space is 
-% sampled by the scenarios, but the action space is kept as its original size.
-
-
-
-
-
-% Requirement of observation probabilities for other solvers
-Other solvers have build upon the principle from POMCP of using Monte Carlo tree search for POMDP planning. 
-Notably, there are DESPOT, POMCPOW, ... TODO ...
-They all have an important requirement in common: The observation probabilities need to be known to the solver. Thereby, particles that are added to the belief can be weighed by how likely their associated observation is at the current belief state after performing a certain action in the prior state. However, the observation probabilities are essentially unknown in our assisted driving scenario. 
-
-% TODO ...
+% Instead of using parametric forms, beliefs in continuous POMDPs can be represented with sets of particles (Thrun, 1999; Bai et al., 2011). Thrun proposes to use a particle filter for the belief updates and fitted value iteration for solving the POMDP. The proposed function approximator is K-nearest neighbors with the Kullback-Leibler divergence between kernel- based belief density estimates as distance metric. The repeated distance computations, which are expensive in high-dimensional spaces, represent a computational burden for this approach. Additionally, tuning is required for the parameters of the kernels. To escape these issues, Bai et al. combine a particle-based belief representation with the use of α-functions encoded as policy graphs to represent the value function (Bai et al., 2011). Instead of using policy graphs, which pose some limitations for long planning horizons, Brechtel et al. propose to represent the α-functions using regression trees (Brechtel et al., 2013; Brechtel, 2015). Finally, Sunberg and Kochenderfer propose an extension of POMCP that can handle fully continuous POMDPs by applying progressive widening to the action and observation spaces (Sunberg and Kochenderfer, 2018).
