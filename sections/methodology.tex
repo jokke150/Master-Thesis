@@ -72,11 +72,15 @@ Accelleration, braking, and gear changes are performed by a simple controller in
     \label{eq:steering}
 \end{equation}
 
-The driver has the  full natural steering control with $a_{driver} \in [-1, +1]$. If the driver is distracted while the car is in a road bend, in the most extreme situation, she could potentially steer into the opposite direction of where she needs to steer in oder to keep the car centered in its lane. In this case, to correct the driver's incorrect action, the agent needs to be able to effectively reverse the driver's action. Therefore, the range of the agent's steering action $a_{agent} \in [-2, +2]$ is extended. 
+% This is not true. The driver's actions are discretized. This is not having full control. Very important to mark at the driver model
+% TODO: Move discretization to driver.pospos fa
+% The driver has the  full natural steering control with $a_{driver} \in [-1, +1]$. 
 
-The action spaces of both the driver and the agent are discretized by mapping continuous values to a discrete set of values as it can be seen in Table \ref{tab:action_dist}. The discretization resolution has been chosen empirically. More actions allow for a more precise control. However, the number of actions is the branching factor for the search tree the agent constructs to solve the POMDP, and thus has a big impact on the complexity of the search problem. Therefore, a compromise between precision and performance is made. Because minor actions are more likely and generally preferable in a highway driving scenario, the resolution is higher for small steering actions. The actions are individually discretized before being used as input to Equation \ref{eq:steering}.
+Table \ref{tab:actions} shows the discrete actions for the driver and the agent. The discrete values have been chosen empirically. More actions allow for a more precise control. However, the number of actions is the branching factor for the search tree the agent constructs to solve the POMDP, and thus has a big impact on the complexity of the search problem. Therefore, a compromise between precision and performance is made. Because minor actions are more likely and generally preferable in a highway driving scenario, the resolution is higher for small steering actions.
 
-\input{sections/tables/action_discretization.tex}
+\input{sections/tables/actions.tex}
+
+If the driver is distracted while the car is in a road bend, in the most extreme situation, she could potentially steer into the opposite direction of where she needs to steer in oder to keep the car centered in its lane. In this case, to correct the driver's incorrect action, the agent needs to be able to effectively reverse the driver's action. Therefore, the action space of the agent is extended by plus two and minus two. The agent is evaluated in experiments with the full action set but also with a small subset of the full action set including only minor actions (reduced action space in Table \ref{tab:actions}).
 
 \subsubsection{Observations}
 \label{sec:observations}
@@ -107,6 +111,10 @@ Three different driver model configurations with increasingly complex dynamics a
     \item \textbf{Steering overcorrection:} Another, more complex scenario, is based on the assumption that a driver who has just regained attentiveness after having been distracted performs an overly strong steering correction during her first action, and thereby overshoots. The first action of the attentive driver is increased by a random amount between 10 and 25 percent. The over correction is added to the continuous driver action before discretization.
     \item \textbf{Steering overcorrection and noise:} The last, most complex scenario introduces action noise. It acts just like the second scenario, just with an additional random noise between five and 20 percent. The action can thereby become five to 20 percent stronger or weaker. The noise is intended to make the driver less predictable. It is also added before the action discretization is applied.
 \end{enumerate}
+\label{sec:driver_act_discr}
+The actions of the driver are discretized by mapping their continuous values to the closest vaue in the discrete action space as it can be seen in Table \ref{tab:action_dist}.
+
+\input{sections/tables/action_discretization.tex}
 
 \subsubsection{Driver state and its updates}
 
@@ -127,8 +135,6 @@ Equation \ref{eq:reward} shows the reward function for the agent that incorporat
         0,              & \text{otherwise}
     \end{cases}
 \end{equation}
-
-% The general assumption is that an attentive driver performs better in keeping the car centered than an inattentive driver. The agent has to predict whether a driver is attentive or not in order to choose its actions correctly. An incorrect prediction of the driver's actions will lead to overshooting and thus be negatively reflected in the reward for keeping the car centered.
 
 \section{Solution approach using the POMCP algorithm}
 
@@ -158,9 +164,6 @@ The key idea of \Gls{pomcp} is to use Monte Carlo sampling both to sample start 
 
 The number of histories to consider in a POMDP grows exponentially with respect to the depth of the planning horizon. This is called the curse of history. POMCP overcomes this limitation by using a generative model to sample state transitions. By doing so, only a subset of histories is considered; the size of the belief tree is reduced and the curse is \textit{broken} (see Figure \ref{fig:full_vs_pomcp}). Furthermore, there is the curse of dimensionality. The belief space has the same dimensionality as the number of states. Thus, the number of beliefs to consider grows exponentially with the number of states. POMCP uses the states encountered during the construction of the tree to represent the belief. Start belief states are sampled from these states, effectively limiting the number of considered belief states and thereby also breaking the second curse. 
 
-
-% Based on the expected rewards and number of visits of certain actions in the tree, the \glsentryfull{ucb1} algorithm is employed to decide the ratio between exploration and exploitation.
-
 POMCP constructs a search tree representing histories $h$ of actions and observations. At each node, $N(h)$ stores the number of times the node and thereby the coresponding history $h$ has been visited during the sampled trajectories simulated with the generative model. $V(ha)$ gives the action node's expected value that is approximated by the average return of simulations starting at history $h$ and performing action $a$. At every observation node, the belief over the states is maintained by employing a particle filter. Each observation node stores a collection of all states that led to the represented observation during planning. Whenever an observation occurs, the corresponding state is stored in this collection. The states in the collection are called particles and together the particles represent the agent's belief B(h) at the corresponding observation node. The more likely a belief state is, the more often it occurs as a particle in the belief. By using the particle filter method, expensive belief update calculations are not necessary. The collection of states alone aproximates the posterior probability distribution for the belief.
 
 \begin{figure}[htbp]
@@ -174,7 +177,7 @@ Figure \ref{fig:pomcp} illustrates the process of POMCP. The algorithm starts wi
 
 To select which action to perform in the real environment, a fixed number of forward searches is performed from the current history (often a certain maximum planning time is used alternatively). During these searches using the generative model, the belief and the expected action values are updated. After all searches are complete, the action $a_{best}$ with the highest value at the current history $h_{real}$ is returned. After this action is executed in the real environment, with an observation $o_{last}$ the tree can be pruned. Only the nodes from history $h_{real}a_{best}o_{last}$ onward stay relevant as all other histories are rendered impossible. Then, the process repeats from the new history.
 
-The start state for each search is sampled from the belief at the curret history. The search tree is searched in two stages: Simulation and rollout. As long as the search tree contains child nodes for all actions at the currently considered history, the simulation stage is active. During the simulation stage, no new nodes are added to the tree. The tree is searched using the \glsentryfull{ucb1} algorithm to select actions \parencite{ucb1}. UCB1 chooses actions by the principle of optimism in the face of uncertainty. Even with just little knowledge, the algorithm selects the best action greedily. If this optimistic guess turns out to be correct, the algorithm can further continue to exploit this action and regret is kept to a minimum. If the action leads to a bad return, its value is assumed to deteriorate quickly, allowing the algorithm to select an alternative action. Exploration is controled by enhancing the value of rarely-tried actions with a fixed exploration bonus. 
+The start state for each search is sampled from the belief at the curret history. The search tree is searched in two stages: Simulation and rollout. As long as the search tree contains child nodes for all actions at the currently considered history, the simulation stage is active. During the simulation stage, no new nodes are added to the tree. The tree is searched using the \glsentryfull{ucb1} algorithm to select actions \parencite{ucb1}. UCB1 chooses actions by the principle of optimism in the face of uncertainty. Even with just little knowledge, the algorithm selects the best action greedily. If this optimistic guess turns out to be correct, the algorithm can further continue to exploit this action and regret is+ kept to a minimum. If the action leads to a bad return, its value is assumed to deteriorate quickly, allowing the algorithm to select an alternative action. Exploration is controled by enhancing the value of rarely-tried actions with a fixed exploration bonus. 
 
 State transitions are simulated using the generative model. Given the current history and chosen action, the generative model returns a successive state $s'$, observation $o$, and reward $r$. The successive state $s'$ is then added to the belief at the observation node corresponding to $o$ and the count for the current history is incremented. The search continues from $s'$ in the same manner. 
 
@@ -209,6 +212,8 @@ Particle injection is used to increase the variance of the belief about the driv
 
 \subsection{Preferred actions}
 \label{sec:preferred_actions}
+
+Preferred actions are a way to pass domain knowledge to the agent. In the case of the lane keeping scenario on a highway, one thing to consider is that strong steering actions are seldomly needed. Strong actions should only be needed as countermeasure when a distracted driver turns significantly into the wrong direction. 
 
 % TODO: Just say the agent does not act anymore when losing track with the belief instead of using uniformly random action selection? Makes more sense.
 
