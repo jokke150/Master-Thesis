@@ -1,7 +1,11 @@
 \chapter{Theoretical foundation}
 \label{sec:theory}
 
+
+The problem examined in this thesis is assisted lane keeping with shared control by a potentially distracted human driver and an agent. The agent acts as an \gls{adas} to assis the driver in keeping the car centered in its lane. The driver's attentiveness and the exact position of the car are unknown to the agent. In this chapter, the basic theoretical concepts which serve as a foundation to formally model the problem and to solve it are presented. The task involves sequential decision making, where every prior decision influences the following ones. Section \ref{sec:mdp} shows how sequential decision making tasks can be formulated using \Glspl{mdp}. However, since the agent only observes partial information, uncertainty about the driver's attentiveness and the car's road position is involved. Section \ref{sec:pomdp} introduces the \Gls{pomdp}, which is an extension of an MDP, accounting for partial observability of information. It is well suited to model the uncertainty involved in the problem. Solving POMDP is a difficult task. Section \ref{sec:challenges} discusses the key challenges involved in solving POMDP. Many solution approaches have been proposed. In section \ref{sec:solvers} an overview over proposed solvers is provided.
+
 \section{Sequential decision making}
+\label{sec:mdp}
 
 Lane keeping of a car is a sequential decision making task. Every steering action that is performed directly influences the choice of the best succeeding steering actions. \Glspl{mdp} are well suited and widely used to model sequential decision making tasks. An \gls{mdp} is a discrete time framework for a decision maker, the agent, to interact with an environment. At every time step, the environment is in a certain state, fully observable by the agent. The agent interacts with the environment by performing an action that determines the next state of the environment. The underlying assumption, the Markov property, is that the next state of the environment only depends on its current state and the agent's action. The transition to a succeeding state after an action has been performed does not need to be deterministic but can be probabilistic, accounting for randomness in the environment. After performing an action, the agent receives a numerical reward (also called return). The agent's goal is to maximize the cumulative reward it receives over time. An action that leads to a high immediate return is not optimal if another action leads to a higher cumulative reward in the long run. Thus, the agent needs to find an optimal policy that decides the best action to take in every state. In case the state transition probabilities are known to the agent, the optimal policy can be found using model-based techniques such as value or policy iteration. If the transition model is unknown, model-free reinforcement learning can be applied to learn an optimal policy. % TODO: Add source
 
@@ -14,7 +18,7 @@ Lane keeping of a car is a sequential decision making task. Every steering actio
 Assisting a human driver in the lane keeping task is essentially a sequential decision making task as well. However, the agent that is assisting the human driver does not know about the driver's internal psychological state, and therefore her attention. A distracted driver may steer poorly and needs assistance. But how can the agent tell whether the driver is distracted? Reading the driver's mind is not feasible and even if it were, it would be too invasive for this task. Instead, the agent needs to estimate the driver's internal state in order to act adequately. A \Gls{pomdp} is a generalization of an MDP that allows to plan under uncertainty. Even without observing the full state of the agent's environment, of which the driver is part of, a POMDP allows the agent to estimate the environment's true state using the partial information it observes. A POMDP serves as the foundation of this thesis. The lane keeping assistance problem this thesis aims to solve can be defined as a POMDP. First, a formal definition is needed.
 
 \section{Partially observable Markov decision process (POMDP)}
-\label{def:pomdp}
+\label{sec:pomdp}
 % See POMDP Model from (POMDP algorithm) Online Planning Algorithms for POMDPs
 
 The POMDP generalizes the MDP for planning under uncertainty. The environment's true state is unknown to the agent. It has to rely on observations with partial information about the environment's true state to choose its actions. \cite{pomdp-definition} define a POMDP as a tuple $(S, A, T, R, O, Z)$, where:
@@ -67,6 +71,7 @@ The return that is gained by following a policy $\pi$ from a certain belief $b$ 
 The optimal policy $\pi^*$ maximizes $V^\pi(b_0)$. For any POMDP there exists at least one optimal policy.
 
 \section{Key challenges}
+\label{sec:challenges}
 
 \subsection{Curse of dimensionality and curse of history}
 \label{sec:curses}
@@ -91,6 +96,7 @@ For many problems, it is difficult or impossible to know the probability distrib
 % Learning: Whereas planning methods use simulated experience generated by a model, learning methods use real experience generated by the environment.
 
 \subsection{Overview of aproximate POMDP solvers}
+\label{sec:solvers}
 
 \begin{figure}[htbp]
     \centering
@@ -118,8 +124,6 @@ Recently, very promising results have been obtained for large POMDP using Monte 
 The approach of using Monte Carlo sampling for both the choice of evaluated histories and estimating the belief was first applied in the \Glsentryfull{pomcp} algorithm by \cite{pomcp}. POMCP constructs a search tree of sampled histories. Each node stores its estimated value and sampled states that it corresponds to. The estimate is given by the return gained from forward simulations using the generative model during which the node is visited. The exploration is controlled using the \gls{ucb1} \parencite{ucb1} algorithm for action selection. The key idea is to aproximate the belief space using the same set of states that have been encountered during the forward search. Instead of representing the belief as a probability distribution over the states, it is given by the collection of states at the nodes. The underlying assumption is that if a state is more likely, it will be visited more often during the sampled trajectories. The relative number of times a state occurs in the collection defines its probability. Using this belief representation alleviates POMCP from expensive belief update calculations. POMCP has successfully been applied to approximately solve large POMDP. It is the solver used in this thesis. A detailed definition follows in Section \ref{sec:pomcp}. 
 
 The \gls{despot} algorithm by \cite{despot} is a similar approach that can be seen as an evolution of POMCP. DESPOT is efficient as only a fixed number of sampled scenarios are considered. A scenario is a determinized trajectory in the belief tree that is defined in advance. At every depth of the belief tree, all actions but only a subset of resulting observations are considered. Thereby, the observation space is simplified. DESPOT's main advantage over POMCP is the ability to overcome POMCP's relatively poor worst-case behavior \parencite{pomcp-worst-case} caused by the UCB1 algorithm's tendency to overfit. DESPOT circumvents this by using regularization in the value function. Moreover, DESPOT is an anytime algorithm, building its tree incrementally. In addition to its value, at every node upper and lower bounds for its performance are maintained. First, a suboptimal policy is searched using heuristic search \parencite{solver_hsvi} and then it is incrementally improved upon. Branch-and-bound pruning is performed by pruning action nodes from the tree if their expected value is lower than the lower bound of another action. There are further extensions of DESPOT: HyPDESPOT is a parallelized version of DESPOT with significant performance enhancements \parencite{hyp-despot}. DESPOT-$\alpha$ further improves DESPOT's capability to handle very large observation and state spaces \parencite{despot-a}. And DESPOT-IS applies importance sampling to account for very rare events that are hard to sample \parencite{despot-is}. Unfortunately, DESPOT and its derivatives require the observation probability $Z$ to be explicitly known. This is not feasible for the shared control lane keeping task considered in this thesis.
-
-
 
 \subsection{Solving continuous POMDP}
 

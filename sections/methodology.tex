@@ -1,67 +1,84 @@
 \chapter{Methodology}
 \label{sec:problem}
 
-% TODO: Page 38 of Improving Sequential Decision Making in Human-In-The-Loop Systems
-
-% \begin{enumerate}
-%     \item How to get transition and observation probabilities? Am I correct that these need to be given by Florian's model? How would this ever be known in the case of learning with real human drivers?
-%     \item Is the Markov assumption satisfied even though the driver's attentiveness does not depend on the previous state and action?
-%     \item What is known a priori?
-%     \begin{itemize}
-%         \item human's current action (assumption: no, for performance reasons)
-%         \item reward function
-%     \end{itemize}
-% \end{enumerate}
+This chapter formally defines the POMDP used to model the shared-control lane keeping task that is considered in this thesis. Furthermore, the chosen solution approach is presented. Section \ref{sec:lane_keeping_loop} begins with an overview over the three components comprising the problem: The driving simulator serving as the environment, the driver model representing the human driver, and the agent assisting the driver. Section \ref{torcs} describes how the \glsentryfull{torcs} is used to simulate the dynamics of a car driving on a highway. The simple driver model that we use to simulate human driving behavior is specified in Section \ref{sec:driver_model}. The agent employs the \glsentryfull{pomcp} algorithm to solve the POMDP online. A detailed explanation of how the algorithm is applied is provided in Section \ref{sec:pomcp}.
 
 \section{Lane keeping with a human in the loop as a POMDP}
 \label{sec:lane_keeping_loop}
 
+% General problem definition
+
+The problem addressed in this thesis is an assisted driving lane keeping task, where a human driver shares control with an agent over the steering of a car driving on a highway. The goal is to keep the car centered in its lane. Both the agent and the driver have only lateral control; they can steer the car but the car's speed is fixed. The driver can be attentive or distracted and alternates between the two states. The general assumption is that an attentive driver shows (nearly) optimal steering behavior, while a distracted driver steers suboptimally and needs assistance. The agent, however, cannot observe whether the driver is attentive or not. Moreover, it only receives partial sensory information about the position of the car on the road. To fulfill the goal of consistently keeping the car centered in the lane, the agent has to effectively estimate the car's true position and the driver's state of attentiveness according to the information it receives over time. Based on its estimate, the agent determines what actions the driver is likely going to take and where it believes the car to be positioned on the road. It can then plan ahead and select adequate steering actions. 
+
+
+The problem can be formulated as a POMDP as follows (see Section \ref{sec:pomdp} for a general definition of a POMDP):
+\begin{itemize}
+    \item The overall state space $S$ is composed of all possible states for the car and the driver. The state of the car is given by its current position on the road and the forces which it is currently exposed to (see Section \ref{sec:state}). In the case of the driver, her current attentiveness, and the remaining duration for which she stays in this state of attentiveness are cruicial (see Section \ref{sec:driver_model}).
+    \item The action space $A$ consists of all steering actions \emph{the agent} can perform (see \ref{sec:actions}). In the experiments, two different sets of actions are referred to: First, a full action set, which enables the agent to overrule and effectively reverse the driver's actions completely. Second, a reduced action set containing only moderate steering actions.
+    \item The reward function $R$ is based on the car's distance to the center of the lane and its relative angle to the road path (see Section \ref{sec:reward}). The attentiveness of the driver is not considered. The agent is expected to estimate it based on the driver's behavior alone. However, the reward is correlated with the quality of the agent's estimate as its actions can only lead to optimal steering behavior with a correct estimate.
+    \item The observation space $O$ includes all possible observations. The agent observes sensory information about the car's current distance to the road and relative yaw angle (see \ref{sec:observations}). Moreover, the driver's last action is observed. At any time step, the agent only receives the action of the driver for the last time step. Thereby, part of the planning process can be performed during policy execution (see Section \ref{sec:driver_model}).
+    \item The conditional state transition probabilities $T$ and the conditional observation probabilities $Z$ are not explicitly given but implicitly defined by TORCS and the driver model. Each offer an interface to be used as a generative model by the agent (see Section \ref{sec:gen_model}).
+\end{itemize}
+
+%%%%
+% TODO: Add arc between Global state and driver's action model
+%%%%
+
 % TODO: Add state estimator + policy to agent? 
 % See (POMDP definition) Planning and acting in partially observable stochastic domains)
-\begin{figure}[ht]
+\begin{figure}[htbp]
     \centerfloat
-    \includegraphics[width=1.2\linewidth]{figures/Components.pdf}
-    \caption{Solution approach overview}
+    \includegraphics[width=1.0\textwidth]{figures/Components.pdf}
+    \caption{Overview of the modules used to represent and solve the shared control lane keeping POMDP}
     \label{fig:overview}
 \end{figure}
 
+Rather than experimenting with real humans and a real car, simulation models are is used for both the car and the human driver in experiments. Figure \ref{fig:overview} gives an overview of the three distinct modules employed to represent the problem as a POMDP and solve it: First, the racing car simulator TORCS \parencite{torcs} simulates the dynamics of a car driving on a highway. Second, the driver model substitutes the human driver. Third, the agent applies POMCP in order to solve the POMDP online. The modules are described in detail in the following sections. 
+
 % TODO: Add: The agent can only recognize a state change of the driver after the driver has performed the first action in this state. This is because there are no observable clues about the duration of the driver's attentiveness and distraction.
 
-\subsection{Driving simulator TORCS}
+\subsection{TORCS as a highway driving simulator}
+\label{torcs}
 
-\subsubsection{State}
+\glsentryfull{torcs} is an open-source car driving simulator \parencite{torcs}. As the name suggests, TORCS was initially developed to simulate racing car tournaments. However, as racing cars are fundamentally also just cars and everything, including the tracks, is highly customizable, highway driving can be simulated just as well. Part of TORCS is a comprehensive and realistic discrete-time simulation engine to simulate car dynamics, as well as an \glsentryshort{api} for computer-controlled drivers, so-called robots.
+
+TORCS is used for two purposes in this thesis. First, its simulation engine serves as the environment for the agent and driver. The steering actions of the agent and driver are combined in a TORCS \emph{robot} satisfying the driver interface. TORCS maintains the car's true state and updates it based on the combined steering action. Second, the simulation engine is used as a generative model to sample state and observation transisitions for the forward search performed during the agent's online MCTS policy computation.  
+ 
+ 
+% TODO: Move this to the next chapter?
+\begin{figure}[htbp]
+    \centerfloat
+    \includegraphics[width=1.0\textwidth]{figures/track.pdf}
+    \caption{Course of the road of a section of the TORCS highway track used for experiments.}
+    \label{fig:track}
+\end{figure}
+
+Typical racing tracks for TORCS have sharp road bends and a generally wide road which can have different widths in its course. This does not reflect a highway driving scenario well. Therefore, a custom highway track is used instead (see Figure \ref{fig:track}). The custom track only has moderate road bends and a constant lane width of 3.75m, as it is common in Europe \parencite{lane_width}. Moreover, a fixed speed of 80 kp/h is set during experiments.
+
+\subsubsection{Car state and its updates}
 \label{sec:state}
 
-% TODO: Define terminal state
-
-The tracks will be round courses. Thus, there is no terminal state if everything goes well. If the car reaches an off-track position, however, the car is reset to be in the initial starting position again.\\
-
-\begin{tabularx}{\textwidth}{@{}p{0.18\textwidth}>{\centering}p{0.22\textwidth}X@{}}
-\toprule
-\textbf{Name}           & \textbf{Measurement}          & \textbf{Description}                                           \\ \midrule
-
-Gear \newline \textbf{(constant)} & \{$-1$, $0$, $1$,  \dots, $6$\} & Distance of the car from the start line along the track line. \textbf{Neither the human driver nor the agent can directly influence this with their actions.} \\ \midrule
-
-RPM \newline \textbf{(constant)} & [0, $+\inf$) & Number of engine rotations per minute. \textbf{Neither the human driver nor the agent can directly influence this with their actions.} \\ \midrule
-
-Speed \newline \textbf{(constant)}  & ($-\inf$, $+\inf$) (km/h) & Speed along the longitudinal axis of the car. \textbf{Neither the human driver nor the agent can directly influence this with their actions.} \\ \midrule
-
-% Lift \newline \textbf{(constant)} & ($-\inf$, $+\inf$) (km/h) & Speed along the vertical axis of the car. Will be zero as we use completely flat terrain. \textbf{Neither the human driver nor the agent can directly influence this with their actions.} \\ \midrule
-
-Side force & ($-\inf$, $+\inf$) (km/h) & Speed along the transverse axis of the car. This is directly influenced by the steering actions of both human driver and agent. \\ \midrule
-
-Distance from start & [0, $+\inf$) (m) & Distance of the car from the start line along the track line. \\ \midrule
-
-Angle          & [$-\pi$, $+\pi$] (rad) & Angle between car direction and track axis direction.  \\ \midrule
-
-Lane position & ($-\inf$, $+\inf$)     & Horizontal distance between the car and the track axis. $0$ when the car is on the axis, $+1$ if the car is on the left edge of the track, and $-1$ if the car is on the right edge of the track. Greater numbers than $+1$ or smaller numbers than $-1$ indicate that the car is off-track. \\ \midrule
-
-Driver attention & True / False & Whether the human driver is attentive or distracted.  \\ \bottomrule
-
-\end{tabularx}
+TORCS data model for the car state is too extensive to list here in full\footnote{See tCar struct in the \href{https://sourceforge.net/projects/torcs/files/api-docs/}{TORCS API documentation}}. Most important are the car's position on the track, its current velocity and its accelleration. Among others, there are additional attributes for the state of transmission and engine, the friction and spin of the wheels, and aerodynamic influences such as the current air speed. The values in the state are continuous. The state is updated by the simulation engine every 0.002 seconds of simulated time (this is the driving time that is simulated, not real time). By default, robots provide new control actions to the car every 0.02 seconds. However, for the experiments in this thesis, a rate of 0.1 seconds is chosen. This makes the ride less smooth but reduces the frequency in which the agent has to plan ahead, reducing the amount of planning time. The steering action is repeated until a new one is provided.
 
 \subsubsection{Actions}
 \label{sec:actions}
+
+Accelleration, braking, and gear changes are performed by a simple controller intended to keep the speed constant at at all times. The human driver and the agent share control of the steering wheel. The steering input of the driver $\mathcal{A}_{steer}^{driver}$ and agent $\mathcal{A}_{steer}^{agent}$ are combined to ${A}_{steer} \in [-1, +1]$ using equation~\ref{eq:steering}.
+
+
+
+If the driver is distracted while the car is in a road bend, in the most extreme situation, the driver could potentially steer into the opposite direction of where he needs to steer in oder to keep the car centered in its lane
+
+a distracted driver could steer into the opposite direction of the trajectory of the lane center.
+
+The agent needs to be able to fully counteract a distracted driver's actions. In the extreme case, while the car is in a road bend, a distracted driver could steer into the opposite direction of the trajectory of the lane center. Thus, the car would not only diverge from the lane center but would even get off the road completely. The agent thus needs to reverse the driver's action in order to keep the car centered in the lane and follow the road curve. Therefore, we define the range for the agent's steering action as follows: $\mathcal{A}_{steer}^{agent} \in [-2, +2]$.
+
+\begin{equation}
+    \mathcal{A}_{\textrm{steer}} = \min(\, -1, \, \max(\, 1, \, (\mathcal{A}_{\textrm{steer}}^{\textrm{driver}} + \mathcal{A}_{\textrm{steer}}^{\textrm{agent}})\,)\,)
+    \label{eq:steering}
+\end{equation}
+
+
 
 \begin{tabularx}{\textwidth}{@{}p{0.18\textwidth}>{\centering}p{0.22\textwidth}X@{}}
 \toprule
@@ -72,22 +89,15 @@ Driver attention & True / False & Whether the human driver is attentive or distr
 Steering         & [$-2$, $+2$] & The input to the car is generated by combining the agent's action with the human's steering action (see equation~\ref{eq:steering}). For the car,  $-1$ means full right (159 degrees) and $+1$ means full left (21 degrees). A value greater than +1 or lower than -1 can effectively reverse an opposite action of the human driver. \\ \bottomrule
 \end{tabularx}\\\\
 
-\noindent The human driver and the agent share control of the steering wheel. The speed of the car is fixed and cannot be altered; neither by human driver nor agent. The steering input of the driver $\mathcal{A}_{steer}^{driver}$ and agent $\mathcal{A}_{steer}^{agent}$ are combined to ${A}_{steer} \in [-1, +1]$ using equation~\ref{eq:steering}.
-
-The agent needs to be able to fully counteract a distracted driver's actions. In the extreme case, while the car is in a curve, a distracted driver could steer into the opposite direction of the trajectory of the lane center. Thus, the car would not only diverge from the lane center but would even get off the road completely. The agent thus needs to reverse the driver's action in order to keep the car centered in the lane and follow the road curve. Therefore, we define the range for the agent's steering action as follows: $\mathcal{A}_{steer}^{agent} \in [-2, +2]$.
-
-\begin{equation}
-    \mathcal{A}_{\textrm{steer}} = \min(\, -1, \, \max(\, 1, \, (\mathcal{A}_{\textrm{steer}}^{\textrm{driver}} + \mathcal{A}_{\textrm{steer}}^{\textrm{agent}})\,)\,)
-    \label{eq:steering}
-\end{equation}
+\noindent 
 
 \subsubsection{Observations}
 \label{sec:observations}
 
-\begin{figure}[ht]
-    \includegraphics[width=0.3\linewidth]{figures/Observations.jpg}
+\begin{figure}[htbp]
+    \includegraphics[width=0.8\linewidth]{figures/angle_distance.pdf}
     \centering
-    \caption{Main environment observations}
+    \caption{Illustration of lane centeredness and yaw angle values}
     \label{fig:observations}
 \end{figure}
 
@@ -112,6 +122,8 @@ Driver steering (last time step) & [$-1$, $+1$]  & The agent perceives the last 
 \subsection{Driver model}
 \label{sec:driver_model}
 
+% TODO: Page 38 of Improving Sequential Decision Making in Human-In-The-Loop Systems
+
 The driver model is simplistic. If the driver is attentive, its actions are optimal. The driver model returns the action that steers the car as close to the center of the lane as possible. In this case, the agent should not interfere. However, if a distracted driver is modeled, the driver just repeats the last action it performed while being attentive. This can have the effect of the driver's action to overshoot with the car diverging from the center of the lane. Following, the agent has to identify distracted driving and counteract.
 
 When the driver model is initialized, it is randomly set to be attentive or distracted. The driver stays in this state for a randomly chosen discrete time period between ten and 60 seconds for an attentive state and between two and six seconds for a distracted state. After the chosen time period, the state of attentiveness switches; a previously attentive driver becomes distracted, and a previously distracted driver becomes attentive. The process repeats until the experiment is over.
@@ -125,6 +137,7 @@ When the driver model is initialized, it is randomly set to be attentive or dist
 \subsubsection{Steering over-correction and noise}
 
 \subsection{Reward}
+\label{sec:reward}
 
 The overall goal for the agent is to only assist the driver in keeping the car centered in its lane. Therefore, this is the main source of reward for the agent. The more centered the car is at a certain time step, the more reward $r$ is received. However, the agent is supposed to leave the human driver with as much autonomy as possible. Thus, any intervention by the agent is penalized. Minor smooth interventions are generally preferred over large abrupt steering actions. Accordingly, the penalty is (exponentially) dependent on the intensity of the agent's action. The general assumption is that an attentive driver performs better in keeping the car centered than an inattentive driver. The agent has to predict whether a driver is attentive or not in order to choose its actions correctly. An incorrect prediction of the driver's actions will lead to overshooting and thus be negatively reflected in the reward for keeping the car centered. Lastly, the car is never supposed to leave the lane. Consequently, leaving the lane is highly penalized.
 
@@ -199,7 +212,7 @@ POMCP constructs a search tree representing histories $h$ of actions and observa
 
 \begin{figure}[htbp]
     \centerfloat
-    \includegraphics[width=1.034\textwidth]{figures/POMCP.pdf}
+    \includegraphics[width=1.0\textwidth]{figures/POMCP.pdf}
     \caption{Flow chart illustrating the \glsentryfull{pomcp} algorithm}
     \label{fig:pomcp}
 \end{figure}
