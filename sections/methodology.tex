@@ -102,6 +102,7 @@ Instead of performing experiments with an actual human driver, the driver is sim
 % TODO: Add driver model illustration
 
 \subsubsection{Configurations}
+\label{sec:driver_model_config}
 
 Three different driver model configurations with increasingly complex dynamics are used in the experiments:
 \begin{enumerate}
@@ -115,7 +116,7 @@ The actions of the driver are discretized by mapping their continuous values to 
 \input{sections/tables/action_discretization.tex}
 
 \subsubsection{Driver state and its updates}
-
+\label{sec:driver_state}
 The driver state consists of two variables: The current state (attentive or distracted), and the duration it remains in its current state. The driver model is initially set to an attentive state. The duration it remains in this state is randomly chosen but lies between one second (10 actions) and 5 seconds (50 actions) of simulated time. Every 0.1 seconds, an action is chosen depending on the driver's current state. Afterwards, the remaining duration is decremented by 0.1. When the time runs out for the curren state, the state reverses; an attentigve driver becomes distracted and a distracted driver regains attentiveness. The duration for the resulting state is randomly chosen again. The process repeats until the experiment is over.
 
 \subsection{Reward}
@@ -175,7 +176,7 @@ Figure \ref{fig:pomcp} illustrates the process of POMCP. The algorithm starts wi
 
 To select which action to perform in the real environment, a fixed number of forward searches is performed from the current history (often a certain maximum planning time is used alternatively). During these searches using the generative model, the belief and the expected action values are updated. After all searches are complete, the action $a_{best}$ with the highest value at the current history $h_{real}$ is returned. After this action is executed in the real environment, with an observation $o_{last}$ the tree can be pruned. Only the nodes from history $h_{real}a_{best}o_{last}$ onward stay relevant as all other histories are rendered impossible. Then, the process repeats from the new history.
 
-The number of searches that is performed during the planning has a substantial impact on the quality of the derived policy. POMCP is proven to converge towards the optimal policy if the number of searches, and therefore the number of visits at each node, approaches infinity \parencite{pomcp}. Unfortunately, the computational complexity is exponential with respect to the number of performed forward searches. However, for a good policy, no infinite amount of searches is necessary. The performance is expected to increase with the number of searches until convergence occurs. 
+The number of searches that is performed during the planning has a substantial impact on the quality of the derived policy. If the belief state is correct, POMCP is proven to converge towards the optimal policy if the number of searches, and therefore the number of visits at each node, approaches infinity \parencite{pomcp}. Unfortunately, the computational complexity is exponential with respect to the number of performed forward searches. However, for a good policy, no infinite amount of searches is necessary. The performance is expected to increase with the number of searches until convergence occurs. 
 
 With the number of searches, the computational complexity 
 
@@ -215,7 +216,7 @@ Particle injection is used to increase the variance of the belief about the driv
 \subsection{Preferred actions}
 \label{sec:preferred_actions}
 
-Preferred actions are a way to pass domain knowledge to the agent. In the case of the lane keeping scenario on a highway, one thing to consider is that strong steering actions are seldomly needed. Strong actions should only be needed as countermeasure when a distracted driver turns strongly into the wrong direction. However, they are needed in these situations, however scarce they are. The idea is to make minor actions more likely to be chosen during rollouts and give them an initial value. Thereby, preferred actions are selected and tried out first by the UCB1 algorithm. If they lead to good results, the agent can exploit on them quicker, if not, the agent will also evaluate less preferred actions. The initial value for all actions is set to  $ v_{init}(a) = 0.9 + 0.1 * Pr(a)$. The action selection probabilities during the rollout phase and the action's initial values are shown in Table \ref{tab:pref_actions}.
+Preferred actions are a way to pass domain knowledge to the agent. In the case of the lane keeping scenario on a highway, one thing to consider is that strong steering actions are seldomly needed. Strong actions should only be needed as countermeasure when a distracted driver turns strongly into the wrong direction. However, they are needed in these situations, however scarce they are. The idea is to make minor actions more likely to be chosen during rollouts and give them an initial value. Thereby, preferred actions are selected and tried out first by the UCB1 algorithm. If they lead to good results, the agent can exploit on them quicker, if not, the agent will also evaluate less preferred actions. The initial value for all actions is set to  $ v_{init}(a) = 0.9 + 0.1 * Pr(a)$. The action selection probabilities during the rollout phase and the action's initial values are shown in Table \ref{tab:pref_actions}. The initial count is set to zero for all actions.
 
 \input{sections/tables/pref_action_prob.tex}
 
