@@ -1,6 +1,8 @@
 \chapter{Methodology}
 \label{sec:problem}
 
+% TODO: The agent does not know about the driver's next action for performance reasons, so that part of the policy computation can be done during policy execution? This is nowhere explained in teh text but it gotta be explained
+
 This chapter formally defines the POMDP used to model the shared-control lane keeping task that is considered in this thesis. Furthermore, the chosen solution approach is presented. Section \ref{sec:lane_keeping_loop} begins with an overview over the three components comprising the problem: The driving simulator serving as the environment, the driver model representing the human driver, and the agent assisting the driver. Section \ref{torcs} describes how the \glsentryfull{torcs} is used to simulate the dynamics of a car driving on a highway. The simple driver model that we use to simulate human driving behavior is specified in Section \ref{sec:driver_model}. The agent employs the \glsentryfull{pomcp} algorithm to solve the POMDP online. A detailed explanation of how the algorithm is applied is provided in Section \ref{sec:pomcp}.
 
 \section{Lane keeping with a human in the loop as a POMDP}
@@ -42,7 +44,7 @@ Rather than experimenting with real humans and a real car, simulation models are
 
 \glsentryfull{torcs} is an open-source car driving simulator \parencite{torcs}. As the name suggests, TORCS was initially developed to simulate racing car tournaments. However, as racing cars are fundamentally also just cars and everything, including the tracks, is highly customizable, highway driving can be simulated just as well. Part of TORCS is a comprehensive and realistic discrete-time simulation engine to simulate car dynamics, as well as an \glsentryshort{api} for computer-controlled drivers, so-called robots.
 
-TORCS is used for two purposes in this thesis. First, its simulation engine serves as the environment for the agent and driver. The steering actions of the agent and driver are combined in a TORCS \emph{robot} satisfying the driver interface. TORCS maintains the car's true state and updates it based on the combined steering action. Second, the simulation engine is used as a generative model to sample state and observation transisitions for the forward search performed during the agent's online MCTS policy computation.  
+TORCS is used for two purposes in this thesis. First, its simulation engine serves as the environment for the agent and driver. The steering actions of the agent and driver are combined in a TORCS \emph{robot} satisfying the driver interface. TORCS maintains the car's true state and updates it based on the combined steering action. Second, the simulation engine is used as a generative model to sample state and observation transisitions for the forward search performed during the agent's online MCTS policy computation (planning).  
  
  
 % TODO: Move this to the next chapter?
@@ -53,7 +55,7 @@ TORCS is used for two purposes in this thesis. First, its simulation engine serv
     \label{fig:track}
 \end{figure}
 
-Typical racing tracks for TORCS have sharp road bends and a generally wide road which can have different widths in its course. This does not reflect a highway driving scenario well. Therefore, a custom highway track is used instead (see Figure \ref{fig:track}). The custom track only has moderate road bends and a constant lane width of 3.75m, as it is common in Europe \parencite{lane_width}. The road is completely flat and there are no other cars on it. Moreover, a fixed speed of 80 kp/h is set during experiments.
+Typical racing tracks for TORCS have sharp road bends and a generally wide road which can have different widths in its course. This does not reflect a highway driving scenario well. Therefore, a custom highway track is used instead (see Figure \ref{fig:track}). The custom track only has moderate road bends and a constant lane width of 3.75m, as it is common in Europe \parencite{lane_width}. The road is completely flat and there are no other cars on it. Moreover, a fixed speed of 80 km/h is set during experiments.
 
 \subsubsection{Car state and its updates}
 \label{sec:state}
@@ -72,15 +74,11 @@ Accelleration, braking, and gear changes are performed by a simple controller in
     \label{eq:steering}
 \end{equation}
 
-% This is not true. The driver's actions are discretized. This is not having full control. Very important to mark at the driver model
-% TODO: Move discretization to driver.pospos fa
-% The driver has the  full natural steering control with $a_{driver} \in [-1, +1]$. 
-
 Table \ref{tab:actions} shows the discrete actions for the driver and the agent. The discrete values have been chosen empirically. More actions allow for a more precise control. However, the number of actions is the branching factor for the search tree the agent constructs to solve the POMDP, and thus has a big impact on the complexity of the search problem. Therefore, a compromise between precision and performance is made. Because minor actions are more likely and generally preferable in a highway driving scenario, the resolution is higher for small steering actions.
 
 \input{sections/tables/actions.tex}
 
-If the driver is distracted while the car is in a road bend, in the most extreme situation, she could potentially steer into the opposite direction of where she needs to steer in oder to keep the car centered in its lane. In this case, to correct the driver's incorrect action, the agent needs to be able to effectively reverse the driver's action. Therefore, the action space of the agent is extended by plus two and minus two. The agent is evaluated in experiments with the full action set but also with a small subset of the full action set including only minor actions (reduced action space in Table \ref{tab:actions}).
+If the driver is distracted while the car is in a road bend, in the most extreme situation, she could potentially steer into the opposite direction of where she needs to steer in oder to keep the car centered in its lane. In this case, to correct the driver's incorrect action, the agent needs to be able to effectively reverse the driver's action. Therefore, the action space of the agent is extended by plus two and minus two. The agent is evaluated in experiments with the full action set but also with a small subset of the full action set including only minor actions (reduced action space in Table \ref{tab:actions}). The motivation behind this is the assumption that strong steering actions are seldomly needed while driving on a highway and leaving them away might reduce the planning complexity.
 
 \subsubsection{Observations}
 \label{sec:observations}
@@ -160,7 +158,7 @@ Equation \ref{eq:reward} shows the reward function for the agent that incorporat
 % TODO: Illustrate belief tree
 % See Figure 1 in DESPOT
 
-The key idea of \Gls{pomcp} is to use Monte Carlo sampling both to sample start states from the belief and to sample histories using a generative model \parencite{pomcp}. 
+The key idea of \Gls{pomcp} is to use Monte Carlo sampling both to sample start states from the belief and to sample histories using a generative model \parencite{pomcp}. POMDP is an anytime online solver. For an online solver, policy computation (planning) and execution (acting) are intertwined. An anytime algorithm builds the solution incrementally. It can be stopped at any time and there will be a solution, albeit it might not be very good if the algorithm is stopped early.
 
 The number of histories to consider in a POMDP grows exponentially with respect to the depth of the planning horizon. This is called the curse of history. POMCP overcomes this limitation by using a generative model to sample state transitions. By doing so, only a subset of histories is considered; the size of the belief tree is reduced and the curse is \textit{broken} (see Figure \ref{fig:full_vs_pomcp}). Furthermore, there is the curse of dimensionality. The belief space has the same dimensionality as the number of states. Thus, the number of beliefs to consider grows exponentially with the number of states. POMCP uses the states encountered during the construction of the tree to represent the belief. Start belief states are sampled from these states, effectively limiting the number of considered belief states and thereby also breaking the second curse. 
 
@@ -177,16 +175,18 @@ Figure \ref{fig:pomcp} illustrates the process of POMCP. The algorithm starts wi
 
 To select which action to perform in the real environment, a fixed number of forward searches is performed from the current history (often a certain maximum planning time is used alternatively). During these searches using the generative model, the belief and the expected action values are updated. After all searches are complete, the action $a_{best}$ with the highest value at the current history $h_{real}$ is returned. After this action is executed in the real environment, with an observation $o_{last}$ the tree can be pruned. Only the nodes from history $h_{real}a_{best}o_{last}$ onward stay relevant as all other histories are rendered impossible. Then, the process repeats from the new history.
 
+The number of searches that is performed during the planning has a substantial impact on the quality of the derived policy. POMCP is proven to converge towards the optimal policy if the number of searches, and therefore the number of visits at each node, approaches infinity \parencite{pomcp}. Unfortunately, the computational complexity is exponential with respect to the number of performed forward searches. However, for a good policy, no infinite amount of searches is necessary. The performance is expected to increase with the number of searches until convergence occurs. 
+
+With the number of searches, the computational complexity 
+
 The start state for each search is sampled from the belief at the curret history. The search tree is searched in two stages: Simulation and rollout. As long as the search tree contains child nodes for all actions at the currently considered history, the simulation stage is active. During the simulation stage, no new nodes are added to the tree. The tree is searched using the \glsentryfull{ucb1} algorithm to select actions \parencite{ucb1}. UCB1 chooses actions by the principle of optimism in the face of uncertainty. Even with just little knowledge, the algorithm selects the best action greedily. If this optimistic guess turns out to be correct, the algorithm can further continue to exploit this action and regret is+ kept to a minimum. If the action leads to a bad return, its value is assumed to deteriorate quickly, allowing the algorithm to select an alternative action. Exploration is controled by enhancing the value of rarely-tried actions with a fixed exploration bonus. 
 
 State transitions are simulated using the generative model. Given the current history and chosen action, the generative model returns a successive state $s'$, observation $o$, and reward $r$. The successive state $s'$ is then added to the belief at the observation node corresponding to $o$ and the count for the current history is incremented. The search continues from $s'$ in the same manner. 
 
-If any history is visited for the first time during the simulation stage, the algorithm continues in the rollout stage. First, all action nodes are initialized with initial counts an values. These are usually 0, unless preferred actions are used (See Section \ref{sec:preferred_actions}). Then, the history is \textit{rolled out} further using uniform random action selection and the generative model. The process is continually repeated using the succeeding states from the generative model until a maximum depth is reached in the tree. During the rollout, no further nodes than the ones just initialized are added to the tree. The tree's growth is thereby limited to one level of depth per search. The main purpose of the rollout is to form a first estimation of the newly encountered history. After every search, the values at all nodes encoutered during the search are updated by backpropagating the rewards through the tree.
+If any history is visited for the first time during the simulation stage, the algorithm continues in the rollout stage. First, all action nodes are initialized with initial counts an values. These are usually zero, unless preferred actions are used (See Section \ref{sec:preferred_actions}). Then, the history is \textit{rolled out} further using uniform random action selection and the generative model. The process is continually repeated using the succeeding states from the generative model until a maximum depth is reached in the tree. During the rollout, no further nodes than the ones just initialized are added to the tree. The tree's growth is thereby limited to one level of depth per search. The main purpose of the rollout is to form a first estimation of the newly encountered history. After every search, the values at all nodes encoutered during the search are updated by backpropagating the rewards through the tree.
 
 \subsection{Action and observation space discretization}
 \label{sec:discretization}
-
-POMCP is not intended to be used to solve continuous POMDP. However, using POMCP with a continuous states is possible as the particle filter approach can still provide a good approximation of the belief as long as the number of samples is large enough. To account for continuous action and observation spaces, discretization is necessary. Figure \ref{fig:pomcp_cont} shows how POMCP behaves when tasked with solving POMDP with continuous observation or acrtion spaces. If the observations are continuous, the search tree cannot extend beyond the first observation layer as most likely, every observation is unique and thus, no history will ever be visited twice. In the case of continuous actions, the chance of exectuing the same exact action twice is very low. Therefore, in this case likewise no history is reached twice. Planning becomes impossible. However, POMCP can be successfully applied with continuous POMDP by discretizing the action and observation spaces \parencite{pomcp_continuous}.
 
 \begin{figure}[htbp]
     \centering
@@ -194,6 +194,8 @@ POMCP is not intended to be used to solve continuous POMDP. However, using POMCP
     \caption[Comparison of POMCP belief trees with discrete observations and continuous observations]{Comparison of POMCP belief trees with discrete observations (left) and continuous observations (right) with two actions.}
     \label{fig:pomcp_cont}
 \end{figure}
+
+POMCP is not intended to be used to solve continuous POMDP. However, using POMCP with a continuous states is possible as the particle filter approach can still provide a good approximation of the belief as long as the number of samples is large enough. To account for continuous action and observation spaces, discretization is necessary. Figure \ref{fig:pomcp_cont} shows how POMCP behaves when tasked with solving POMDP with continuous observation or acrtion spaces. If the observations are continuous, the search tree cannot extend beyond the first observation layer as most likely, every observation is unique and thus, no history will ever be visited twice. In the case of continuous actions, the chance of exectuing the same exact action twice is very low. Therefore, in this case likewise no history is reached twice. Planning becomes impossible. However, POMCP can be successfully applied with continuous POMDP by discretizing the action and observation spaces \parencite{pomcp_continuous}.
 
 The action space is discretized as outlined before in Section \ref{sec:actions} and the discretization of the observation space is defined in Section \ref{sec:observations}. A balanced discretization resolution is chosen empirically. A too fine grained discretization leads to very wide belief trees and can thereby hinder convergence, while a coarse discretization increases the convergence probability but comes with a lower precision in planning.
 
@@ -213,14 +215,11 @@ Particle injection is used to increase the variance of the belief about the driv
 \subsection{Preferred actions}
 \label{sec:preferred_actions}
 
-Preferred actions are a way to pass domain knowledge to the agent. In the case of the lane keeping scenario on a highway, one thing to consider is that strong steering actions are seldomly needed. Strong actions should only be needed as countermeasure when a distracted driver turns significantly into the wrong direction. 
+Preferred actions are a way to pass domain knowledge to the agent. In the case of the lane keeping scenario on a highway, one thing to consider is that strong steering actions are seldomly needed. Strong actions should only be needed as countermeasure when a distracted driver turns strongly into the wrong direction. However, they are needed in these situations, however scarce they are. The idea is to make minor actions more likely to be chosen during rollouts and give them an initial value. Thereby, preferred actions are selected and tried out first by the UCB1 algorithm. If they lead to good results, the agent can exploit on them quicker, if not, the agent will also evaluate less preferred actions. The initial value for all actions is set to  $ v_{init}(a) = 0.9 + 0.1 * Pr(a)$. The action selection probabilities during the rollout phase and the action's initial values are shown in Table \ref{tab:pref_actions}.
 
-% TODO: Just say the agent does not act anymore when losing track with the belief instead of using uniformly random action selection? Makes more sense.
-
-% This is strongly related to the particle deprivation problem described in Section~\ref{sec:particle_deprivation}. When the driver is in a distracted or attentive state, any number of remaining actions in this state below the maximum number (see Section~\ref{sec:driver_model}) could be valid and can therefore be part of the driver model states in the belief. In successive iterations, particles that represent drivers switching their state earlier than the true driver, and therefore change their steering behavior, are ruled out and removed from the belief. Thereby, after some iterations, driver model states that have the same or more remaining actions than the true state dominate the belief.
-
-% preferred actions = domain knowledge
+\input{sections/tables/pref_action_prob.tex}
 
 \subsection{Generative model}
 \label{sec:gen_model}
 
+The state transition probabilities $T$ and the Observation probabilities $Z$ are not explicitly known. Instead, the agent uses a generative model to sample the tranisitions. For the task at hand, the agent combines TORCS and the driver model to form a generative model. The agent does not know about the real state of the driver model, nor of TORCS. During planning, the agent can use TORC's simulation engine and an interface to the driving model to simulate tranisitions by performing actions starting from arbitrary belief states. The generative model then returns a next state for both driver and TORCS, a reward (using the reward function from Section \ref{sec:reward}), and an Observation. If the belief state is close to the real state, the next state, reward, and observation from the generative model will be close to what they would be if the agent had performed an action in the real environment.

@@ -1,0 +1,27 @@
+\pgfmathdeclarefunction{gauss}{2}{%
+  \pgfmathparse{1/(#2*sqrt(2*pi))*exp(-((x-#1)^2)/(2*#2^2))}%
+}
+
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+          no markers, domain=-2:2, samples=1000,
+          axis lines*=left, xlabel=$x$, ylabel=$y$,
+          every axis y label/.style={at=(current axis.above origin),anchor=south},
+          every axis x label/.style={at=(current axis.right of origin),anchor=west},
+          height=5cm, width=12cm,
+          xtick={-2,-1,-0.75,-0.5,-0.25,-0.15,-0.1,0,0.1,0.15,0.25,0.5,0.75,1,2}, ytick=\empty,
+          enlargelimits=false, clip=false, axis on top,
+          grid = major
+          ]
+          \addplot [fill=mygreen!25, draw=none, domain=-0.625:0.625] {gauss(0,0.4)} \closedcycle;
+          \addplot [mygreen] {gauss(0,0.4)};
+        
+         \draw [yshift=-0.6cm, latex-latex](axis cs:-0.626,0) -- node [fill=white] {80\% chance} (axis cs:0.625,0);
+        \end{axis}
+        
+    \end{tikzpicture}
+    \caption{Caption.}
+\end{figure}
