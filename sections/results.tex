@@ -5,9 +5,6 @@ This chapter presents the results from the experiments. First, in Section \ref{s
 
 % TODO: New scores for baseline as it cannot be perfect 999 if it was true that the agent sometimes has to take suboptimal actions in order to receive more reward in the long run. THis is quite important because otherwise a discount horizon of 1 would be fully sufficient
 
-% TODO: Fix references!
-
-
 % TODO: Add: The agent can only recognize a state change of the driver after the driver has performed the first action in this state. This is because there are no observable clues about the duration of the driver's attentiveness and distraction.
 
 % TODO: Add time after which terminal states occur. Generally, a little more data on terminal states would be good probably.
@@ -61,8 +58,7 @@ For more searches, the average cumulative rewards are similar for the agents wit
 
 The agent restricted to use only a subset of minor actions reaches terminal states in two states in the experiments with 2500, 7500, and 10000 searches. These are not caused by particle deprivation. In all cases, the car is in a road bend and the driver is distracted, steering into the wrong direction. The agent performs its best possible action by steering as much as possible in the opposite direction than the driver. However, because the agent's range of actions is severely limited, the combination of the agent's and driver's actions is not enough to keep the car in the lane. 
 
-% TODO: The strong action is caused by random action selection. This needs to be fixed!
-Using preferred actions results in only one terminal state for experiments with 1500 searches or more. The reason, like for the terminal states reached by the agent without weighted actions, is particle deprivation in combination with an extreme action. Nevertheless, extreme actions are much less likely for the agent with preferred actions. There are multiple occasions where a distracted driver steers into the wrong direction in a road bend and the agent is able to correct the steering by effectively reversing the driver's actions.
+Using preferred actions results in only one terminal state for experiments with 1500 searches or more. The reason, like for the terminal states reached by the agent without weighted actions, is particle deprivation. There are multiple occasions where a distracted driver steers into the wrong direction in a road bend and the agent is able to correct the steering by effectively reversing the driver's actions.
 
 % TODO: Add #actions while attentive
 

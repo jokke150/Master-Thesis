@@ -72,11 +72,14 @@ For the experiments conducted in this thesis, the same driving simulator and dri
 \subsection{Action and observation space discretization}
 % Cannot handle continuous driver actions
 
+The action and observation space for the agents are discrete. POMCP is not suited to be used with continuous action and observation spaces (see Section \ref{sec:discretization}). Steering actions and a car's sensory information are naturally continuous. The results indicate that a discretization of the observation space can be successful. However, the more limited the number of bins used for the discretization, the lower is the precision. On the one hand, increasing the resolution of the discretization can lead to a considerable elevation of the planning complexity. More distinct observations may be encountered while constructing the search tree. A low precision of the observations, on the other hand, does not allow the agent to act precisely, leading to suboptimal behavior. Limited steering precision is also caused by discretizing the action space. If the agent can only choose from a limited number of actions, it cannot steer accurately. Its assistance might be jumpy. This does not allow for a smooth driving experience. Section \ref{sec:conclusion-continuous} discusses briefly how this obstacle could be overcome. 
 
+% TODO: Add a potential explanation
+Furthermore, the actions of the driver are discretized. In any realistic scenario, this just could not be the case as it reduces the driver's precision which is obviously unacceptable. The state space is continuous. Therefore, theoretically, POMCP can work with continuous driver actions, as long as they are discretized for the observations. However, none of the agents is remotely successful if continuous driver actions are used. It becomes impossible to account for all potential driver actions while planning. A wide array of sampled actions would probably be enough to allow for a good estimation. However, a low discretization resolution for the observations leads to a big range of different driver actions that are represented by one observation. Planning becomes too imprecise. Using a continuous observation space could therefore potentially enable the agent to plan with continuous driver actions as well. Further experiments would be necessary to verify this assumption.
 
 \subsection{Driver does not learn or adapt}
 
-
+Research suggests that drivers adapt their driving behavior when they are assisted by a lane keeping assistant \parencite{behavior_adapt}. The driver model used in the experiments does not evolve over time. It does not adapt to the behavior of the agent. Even if the agent would steer into the wrong direction multiple times in a row, the driver model does not adapt to the agent by adjusting its behavior and steering stronger to acocunt for the agent's wrong actions. The driver also does not develop any reliance on the agent - it does not reduce its steering efforts, trusting the agent to correct it, like it would be conceivable with real humans.
 
 % TODO: Mention? Speaks for bad experiment design
 % \subsection{Edge cases}

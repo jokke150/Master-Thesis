@@ -30,6 +30,9 @@ A number of noteworthy experiment design decisions were made that are important 
 
 %TODO: Mention that we choose a challenging task. Usually distracted drivers don't get off the road within seconds ^^
 
+% Most IVIS tasks increased the lateral deviations, but in the majority of cases the drivers were still able to stay in their lane.
+% Driver distraction based lane-keeping assistance - C. Blaschke 
+
 Every experiment consists of 100 repetitions (runs) of episodes consisting of 1000 actions each, if no terminal state is reached earlier. The episodes are independent of each other - no data is persisted. Each episode starts with the same car state (centered in the lane, relative yaw angle of zero) and the same driver model state (attentive, same duration until distracted). The accelleration and braking are controlled by an external controller, keeping the speed constant at 80 km/h during the entire episode. An episode can end prematurely if a terminal state is reached. A state is terminal if the car is off track, which is considered to be the case if the center of the car lies within more than 20 cm beside the left or right lane markings.
 
 1000 actions represent 100 seconds of simulated driving time. The simulation is not executed in real time. For the time of the planning of the agent, the simulation \emph{waits} for the agent; the simulation does not proceed further until the agent has decided on an action. 
@@ -70,6 +73,6 @@ Six different exploration constants and three different search horizons are eval
 
 % TODO: This is probably not great. Rework this section a little
 
-The performance of the agents is measured in two ways: First, there is the cumulative reward an agent receives in an experiment for a particular scenario. Second, there is the terminal states it encounters during the experiment. Terminal states entail that the lane keeping task was failed. It is to be expected that all agents will lead to similar cumulative rewards with an increasing amount of searches during planning. The key is the number of searches they require in order to achieve this reward. A lower number of searches means more efficient, faster planning. Furthermore, the optimality of the agents' policies when converged will be evaluated by comparing the agents' performances with two baselines. First, the driver model driving without assistance as lower bound. Second, an agent with perfect knowldge of the state who always acts optimally.
+The performance of the agents is measured in two ways: First, there is the cumulative reward an agent receives in an experiment for a particular scenario. Second, the terminal states an agent encounters during the experiment is considered. Terminal states entail that the lane keeping task was failed. It is to be expected that all agents will lead to similar cumulative rewards with an increasing amount of searches during planning. The key is the number of searches they require in order to achieve this reward. A lower number of searches means more efficient, faster planning. Furthermore, the optimality of the agents' policies when converged will be evaluated by comparing the agents' performances with two baselines. First, as lower bound, the driver model driving without assistance. Second, as upper bound, an agent with perfect knowldge of the state who always acts optimally.
 
 % TODO: Incude Lane centeredness comparison?
