@@ -1,11 +1,142 @@
 \chapter{Discussion}
 \label{sec:discussion}
 
+In this chapter, the results that were presented in the previous chapter are analyzed. The reasons for the performance differences but also the similarities of the agents are explained in Section \ref{sec:discussion_analysis}. Furthermore, Section \ref{sec:limitations} elaborates on limitations of the chosen solution approach.
+
 \section{Analysis of the results}
+\label{sec:discussion_analysis}
+
+\subsection{Hyperparameter optimization}
+
+The results for the hyperparameter optimization are particularly interesting for two reasons: First, the extended experiments are based on the resulting hyperparameters that are deemed best. Second, the results are quite different for the three agents. 
+
+A combination of a relatively low exploration constant and a shallow search horizon leads to the best results for the agent with the full unweighted action set. This combination has the effect that the agent constructs a search tree with a maximum depth of only five actions, while it explores relatively little. The agent with the reduced action space yields the best result with a combination of a shallow search horizon but a large exploration constant. During planning, it also only considers five potential future actions but is inclined to explore considerably more. The agent using the full action space starts to exploit early during planning on actions that have shown to be rewarding initially. In contrast, the agent with a reduced action space considers actions more often before starting to exploit on the ones which show better returns. The difference in the agents' behaviors makes sense considering the different number of actions they can choose from during planning. The agent utilizing the full action space has to be more selective. Otherwise, it would \emph{waste} a large amount of its searches to explore the many potential actions and would not be able to generate a meaningful belief at any node.
+
+% TODO: Provide concrete planning time
+
+For the agent using preferred actions, The best results are achieved with a deep search horizon and a low exploration constant. The agent plans ahead 25 actions into the future, with relatively little exploration. The increased search horizon has the effect that the planning complexity, and thereby the planning time, is significantly greater than for the other two agents. It is very important to take this into account. The potential applicability to driving with a real human is highly dependent on the planning time.
+
+\subsection{Convergence behavior}
+
+The main cause for suboptimal behavior and reaching terminal states is particle deprivation. The more complex the problem, the more searches are needed to guarantee that a wide array of possible future scenarios are covered. As long as their belief represents the environment's and driver's states well, all agents lead to a good lane keeping performance. However, even with a large number of searches, the agents without preferred actions reach terminal states in some runs, independent of which driver model is used. The only agent that consistently avoids reaching terminal states in all experiments with more than 5000 searches is the agent using preferred actions. 
+
+Particle deprivation occurs when an agent's belief strongly diverges from the true state. At some point, none of the observations it receives during planning will match the real observation anymore. The agent has lost track of the true state completely. For the node representing the real observation, the belief tree stores no particles. From this point on, the agent is effectively clueless about the true state and continues to use random action selection.
+
+% Particle deprivation does not occur because the agent loses track of the car's state but because it loses track of the driver's state.
+% Justify!
+
+% How could preferred actions even help here? 
+% If a better action is evluated more, also more driver model scenarios are considered.
+
+% Why does the agent with a reduced action space not perform better?
+% Simple : Terminal state not caused by particle divergence.
+% The agent restricted to use only a subset of minor actions reaches terminal states in two states in the experiments with 2500, 7500, and 10000 searches. These are not caused by particle deprivation. In all cases, the car is in a road bend and the driver is distracted, steering into the wrong direction. The agent performs its best possible action by steering as much as possible in the opposite direction than the driver. However, because the agent’s range of actions is severely limited, the combination of the agent’s and driver’s actions is not enough to keep the car in the lane.
+% Medium: No real explanation. The terminal states are caused almost exclusively by particle deprivation after a formerly distracted driver becomes attentive again and overcorrects.
+% High: No reason
+
+
+% Does looking far into the future help further?
+
+% TODO: The next statement is basically wrong
+Using preferred actions lowers the chance of particle deprivation. Due to the use of preferred actions, the agent does not start with equal initial values at new nodes during rollouts. Instead, the actions are weighted with domain knowledge (see Section~\ref{sec:preferred_actions}). The likelihood of selecting an action for a rollout is bound to its intensity, with less severe steering actions being preferred as the need for strong steering is scarce on a highway track. Assuming the underlying assumption of the introduced domain knowledge is valid, and the return is confirmed to be higher for a preferred action during initial searches, then exploration is kept to a minimum. If the reward does not drop sufficiently, the agent is allowed to exploit on the preferred action. It is like lowering the threshold of trustworthyness for preferred actions; they need less initial confirmation than others. Thereby, a preferred  action, if successful initially, is evaluated relatively often, even with fewer searches. At each evaluation, the simulated next state will be added to the belief of the node representing the chosen action and a resulting observation. Consequently, nodes connected with the preferred actions hold a more comprehensive belief.
+
+The reasons why particle deprivation occurs differ between the driver model scenarios and agents. 
+
+
+% TODO: Instead of random action selection, the agent shoudl stop acting when particle deprivation occurs. The random action selection was chosen because this is the way the experiments in the original POMCP paper are designed, but it would make more sense to disable the assistance altogether.
+
+
+% Simple
+
+% Full action space - Early, but no clue why
+% Reduced - later 
+
+
+% Medium
+
+% The terminal states are caused almost exclusively by particle deprivation after a formerly distracted driver becomes attentive again and overcorrects.
+
+% Hard
+
+
+
+
+
+The advantage of the agent using preferred actions becomes clearer than before during this experiment.
+
+
+
+However, with increasing complexity of the driver model, the agents 
+
+
+For the simple driver model, all three agents perform quite similar. Convergene is reached with a low number of searches.
+
+
+With all three driver models , all agents get significantly better 
+
+%%%%%%
+% CONVERGENCE GENERAL
+
+% Recap: When does convergence occur
+% + Explain again that it is not possible to say it accurately because of the distances between the number of searches parameters
+
+% All agents can lead to good policies if they use a high number of searches
+
+% Preferred actions lead to substantially earlier convergence for the more complex driver models and to fewer terminal states.
+% Why?
+
+% Performance of the agent with the reduced action set does not differ much from the agent using the full action set
+% Why?
+
+% Particle deprivation as the main problem cause. Why does it occur? Are there possible countermeasures?
+
+% Highlight relatively low number of repetitions compared to other papers
+
+%%%%%%
+% CONVERGENCE SIMPLE
+
+% What causes the particle deprivation? Would have to look at the data again
+
+
+%%%%%%
+% CONVERGENCE MIDDLE
+
+% The max values are similar to the average values in the simple case. Agents just fail to predict the state correctly more often.
+% Why?
+
+% Mention? Technically, the agent can never directly know when a driver's state change occurs but only after the driver executes the first action in the new state. So he should never be able to account for steering over correction directly
+
+% The terminal states are caused almost exclusively by particle deprivation after a formerly distracted driver becomes attentive again and overcorrects.
+
+
+%%%%%%
+% CONVERGENCE HARD
+
+% Results are not much different than for the scenario without driver action noise - Why?
+
+% Despite this deviation, the data is very similar to the experiment without noise. The most likely reason for this is the discretization applied to the driver's actions (see Section~\ref{sec:discretization}). Low noise that is added to an action is often lost during discretization. Resulting is the same action as it would have been before adding the noise.
+
+\subsection{Mean lane centeredness}
+
+%%%%%%
+% LANE CENTEREDNESS
+
+% More searchs lead to better lane centering. Well, this was to be expected
+
+% The lane centering for runs with only a few searches is good if they do not end up in a terminal state due to particle deprivation. The agents are all generally good at planning if their belief does not deviate too strongly from the true state.
+
+% TODO: Definitely need the ground truth to back this up
+% The agent with preferred actions appears to have a higher variance in its lane centeredness. A possible explanation is that this agent accounts better for the times it has to purposefully deviate from the center of the lane, in order to achieve better values subsequently. However, this cannot definitely be concluded.
+
+
+
+
 
 \section{Limitations}
+\label{sec:limitations}
 \subsection{Driver does not learn or adapt}
 \subsection{Long planning time}
 \subsection{Action and observation space discretization}
+% Cannot handle continuous driver actions
 \subsection{Dependency on reliable driver and environment models}
 \subsection{Edge cases}

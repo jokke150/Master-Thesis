@@ -4,7 +4,7 @@
 % TODO: Clear message: What do we want to find out?
 
 
-In this chapter, the experimens that are performed are introduced. First, an overview of the different evaluated scenarios is given. Subsequently, some important experiment design decisions are explained and justified. Furthermore, the process of tuning the hyperparameters is discussed. Lastly, the performance metric for the evaluation is presented.
+In this chapter, the experimens that are performed are introduced. First, an overview of the different evaluated scenarios is given in Section \ref{sec:scenarios}. Subsequently, in Section \ref{sec:design_decisions} some important experiment design decisions are explained and justified. Furthermore, the process of tuning the hyperparameters is discussed in Section \ref{sec:exp_hyperparams}. Lastly, the performance metrics for the evaluation are presented in Section \ref{sec:perf_metrics}.
 
 All experiments have been performed single threaded, but in parallel, on a Google Cloud C2 Compute-optimized\footnote{See \href{https://cloud.google.com/compute/docs/machine-types}{Google Cloud machine families}} virtual machine with 60 cores and 240 GB RAM, running Ubuntu 20.04 LTS.
 
@@ -12,6 +12,7 @@ All experiments have been performed single threaded, but in parallel, on a Googl
 % TODO: Add recap of general highway lane keeping scenario?
 
 \section{Evaluated scenarios}
+\label{sec:scenarios}
 
 Three different agent configurations are evaluated, with differing action selection procedures. Moreover, there are three driver models with increasing complexity. In the experiments, each agent is tested with each of the driver models. The aim is to find out how well the different agents can handle the increasing complexity of the driver models.
 
@@ -22,9 +23,12 @@ The driver model configurations are introduced in Section \ref{sec:driver_model}
 In total, this maks nine scenarios (three agents $\times$ three driver models). For each of these scenarios, 13 experiments are executed with varying number of forward searches during planning with the POMCP algorithm (see Section \ref{sec:pomcp}). The rationale behind this is to determine after how many searches the agents' performance converges. The number of searches has a substantial impact on the planning time the agent needs before deciding on its next action. The fewer searches are needed for a good policy, the better, as this translates to a lower planning time.
 
 \section{Experiment design decisions}
+\label{sec:design_decisions}
 A number of noteworthy experiment design decisions were made that are important to consider. These are highlighted and motivated in the following subsections.
 
 \subsection{Episode definition and repetitions}
+
+%TODO: Mention that we choose a challenging task. Usually distracted drivers don't get off the road within seconds ^^
 
 Every experiment consists of 100 repetitions (runs) of episodes consisting of 1000 actions each, if no terminal state is reached earlier. The episodes are independent of each other - no data is persisted. Each episode starts with the same car state (centered in the lane, relative yaw angle of zero) and the same driver model state (attentive, same duration until distracted). The accelleration and braking are controlled by an external controller, keeping the speed constant at 80 km/h during the entire episode. An episode can end prematurely if a terminal state is reached. A state is terminal if the car is off track, which is considered to be the case if the center of the car lies within more than 20 cm beside the left or right lane markings.
 
@@ -55,12 +59,14 @@ The actions of the driver are discrete (see Section \ref{sec:driver_act_discr}).
 Every run has a different seed for the random number generator used for all randomness in the driver model. Every run comes with different driver behavior. However, all experiments share the same seeds for the runs. For example, this means that during run one of every experiment, the driver model state changes are at the same times and lead to the same durations for attentive and distracted periods. The driver actions can differ though since they are dependent on the car's state, which is also influenced by the agent's actions. The reason for this setup is twofold: First, varying driver behavior for different runs verifies the robustness of the agents to varying situations. Second, sharing the seeds between different experiments ensures the comparability between experiments. The driver model used for the generative model of the agent and the driver model representing the actual driver do \emph{not} share the same seed.
 
 \section{Hyperparameter optimization}
+\label{sec:exp_hyperparams}
 
 Besides the number of searches, there are two additional hyperparameters of POMCP that have a strong influence on the planning performance: The search horizon and the exploration constant. The exploration constant is used to enhance the value of rarely-tried actions in order to facilitate exploration and stop the agent from overfitting. The search horizon (or discount horizon) describes how many actions the agent looks into the future during planning, if no terminal state is reached earlier.
 
 Six different exploration constants and three different search horizons are evaluated in a grid search for the best combination. Each combination is evaluated by the average cumulative return from an experiment with 20 runs, up to 1000 actions each, and 1000 searches per planning step. The second driver model is used for all experimens (steering overcorrection, no action noise; see Section \ref{sec:driver_model_config}). The grid search is only performed for this selected scenario because of limited computing and time resources. However, the experiments should be sufficient to indicate the performance differences stemming from the hyperparameter combinations.
 
 \section{Performance metrics}
+\label{sec:perf_metrics}
 
 % TODO: This is probably not great. Rework this section a little
 

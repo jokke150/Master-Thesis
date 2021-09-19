@@ -3,7 +3,17 @@
 
 \section{Conclusion}
 
+% The agent should have access to the full action space. Otherwise, it is not prepared for some situations.
+
+% Additional clues about the driver's attentiveness are needed. 
+
+% 
+
 \section{Road toward application with human drivers}
+\subsection{Avoiding particle deprivation}
+% Main problem: particle deprivation. Encountered sceanrio has not bee considered (enough) in the planning phase.
+% Potential solution: Add additional clues for the agent about the attentiveness of the driver. (Look up some possibilities in papers)
+
 \subsection{Performance optimization}
 % Currently, the whole torcs state is used as state in the belief. A lot of data in it may not be relevant for planning or rarely change. This comes with a huge memory overhead. Optimizing the state representation by only including what is really needed will improve the memory requirements. Currently, the experiments with 10.000 searches require about 8 GB of memory each. 
 \subsection{Integrating realistic driver and environment models}
