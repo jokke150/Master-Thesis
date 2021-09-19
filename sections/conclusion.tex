@@ -15,7 +15,15 @@
 % Potential solution: Add additional clues for the agent about the attentiveness of the driver. (Look up some possibilities in papers)
 
 \subsection{Performance optimization}
+\label{sec:perf_opt}
 % Currently, the whole torcs state is used as state in the belief. A lot of data in it may not be relevant for planning or rarely change. This comes with a huge memory overhead. Optimizing the state representation by only including what is really needed will improve the memory requirements. Currently, the experiments with 10.000 searches require about 8 GB of memory each. 
+
+
+% First, the generative model can be made more efficient. Second, the POMCP algorithm could be parallelized or potentially even replaced by a more efficient algorithm.
+
+% See Parallelizing POMCP to Solve Complex POMDPs
+% See HypDespot
+
 \subsection{Integrating realistic driver and environment models}
 % Requirement for an accurate generative model
 \subsection{Continuous action and observation space}
