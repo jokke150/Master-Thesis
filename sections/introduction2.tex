@@ -3,10 +3,82 @@
 
 \section{Motivation}
 
-\section{Problem overview}
+Fully autonomously driving cars have the potential to rule out human driving error, which is at least a contributing factor to most accidents today. Many social and technical obstacles have yet to be overcome until fully autonomous cars become market-ready \parencite{autonomous_driving_book}. Cars will likely not be able to drive fully autonomously in the near future, continuing to require some degree of human supervision and intervention (\cite{human-needed}, and \cite{human-needed-2}). Before the introduction of fully autonomous driving, two transitional stages are conceivable \parencite{shared_control}: First, partially autonomous driving refers to the partial relinquishment of the responsibility of the driver. Only specific tasks, such as lane-keeping or cruise control, are delegated to an assistance system, while the driver retains the responsibility for other tasks. Second, conditional automation goes one step further; the car is controlled autonomously. Only if intervention by the driver is deemed necessary, the driver is alerted, and control is handed over. 
+
+Increasing intervention by an assistance system limits the driver's autonomy. A loss of autonomy can turn driving into a monotonous and tedious supervisory task. As a result, drivers may distract themselves more frequently \parencite{driver-distraction}, have reduced reaction times \parencite{reaction-time}, suffer from a lower situational awareness \parencite{situational-awareness}, and can place too much trust in the assistance system \parencite{over-trust}. Moreover, in the case of conditional automation, the time required for the driver to shift back to driving from a non-driving task may be too long in critical situations \parencite{takeover-time}. To mitigate these problems, \cite{shared-control-haptics} propose employing a shared control scheme: The driver and the assistance system continuously share the control authority of the car, cooperating in the driving task. The driver is kept in the loop. Thereby, the driving task stays enjoyable, and drivers are prevented from relying too heavily on the assistance systems.
+
+A large part of driving accidents are associated with driver distraction \parencite{distracted_nhtsa}. Therefore, it seems reasonable to make the extend of the assistance dependent on the driver's level of attention. Whenever a driver is inattentive or distracted, an assistance system needs to be particularly sensitive. \cite{disracted-lane-keeping-1} and \cite{disracted-lane-keeping-2} show that increasing the intensity of lane-keeping assistance when the driver is distracted increases lane-keeping performance, while the driver is not influenced in her driving while being attentive. 
+
+However, the detection of driver distraction is complex. Methods like eye movement tracking \parencite{eye-movement}, head tracking \parencite{head-tracking}, and driver gaze monitoring \parencite{gaze-monitoring} have been proposed and proven to be successful. However, they all rely on continuous video recordings and analysis of the driver. This is a privacy intrusion and may not be desirable or impractical (e.g. low-light situations). 
+
+This thesis presents an alternative approach: A \Gls{pomdp} is used to model a shared-control lane-keeping scenario. A driver is assisted by a lane-keeping assistance system that estimates the driver's attentiveness online, based on the driver's past behavior. An explicit measurement of the driver's distraction is not required.
+
+\section{Problem overview and research questions}
+
+
 
 \section{Proposed solution approach}
 
 \section{Related work and contributions}
+
+
+
+
+
+% General shared control driving:
+% Sharing Control With Haptics: Seamless Driver Support From Manual to Automatic Control
+
+% Using RL for lane keeping
+% End-to-End Deep Reinforcement Learning for LaneKeeping Assist
+% Design of a Reinforcement Learning-Based Lane Keeping Planning Agent for Automated Vehicles
+
+% Modeling other people's/ driver's hidden psychological states
+% Intention-Aware Online POMDP Planning for Autonomous Driving in a Crowd
+% Towards Human-Like Prediction and Decision-Making for Automated Vehicles in Highway Scenarios
+% Probabilistic Motion Planning in Uncertain and Dynamic Environments
+
+% Lane change POMDP
+% Tactical Decision-Making for Highway Driving
+
+% Intersection POMDP
+% 
+
+% Pedestrian avoidance POMDP
+% Intention-Aware Motion Planning
+% Intention-Aware Online POMDP Planning for Autonomous Driving in  a Crowd
+% Closing the Planning-Learning Loop with Application to Autonomous Driving in a Crowd
+
+%%%%%%
+% Shared control
+
+
+
+% Drowsy driver: A POMDP Framework for Human-in-the-Loop System
+
+
+% Improving Human-In-The-Loop Decision Making In Multi-Mode Driver Assistance Systems Using Hidden Mode Stochastic Hybrid Systems
+% Lane keeping and lane change - Active control or warning
+% Distracted driver
+% Distraction is classified by monitoring the driver's smartphone use
+% -> The agent has some clear clues on whether the driver is distracted or not. We only base the estimate on the driver's past behavior
+% continuous car state is known to the agent
+% Reward function includes driver's attentiveness. This is not realistic, as the attentiveness is unknown. 
+% Only discrete states are hidden and there are only discrete control inputs.
+% Existing commercial driver assistance systems, including automatic braking systems and lane-keeping systems, may monitor the state of the vehicle or the environment to determine whether the systems should intervene. However, the state of the human driver is not typically included in the decision making process. In this paper, we propose to use hidden mode stochastic hybrid systems to model the interaction between the human driver and the vehicle. We show that by monitoring the human behavior as well as the vehicle state, we can infer the human state and enhance the quality of decision making in a driver assistance system.
+
+
+%%%%%%
+% Reward formulations
+% \cite{reward1}; \cite{reward2}
+
+%%%%%%
+% Step further: Active probing
+% Although efficient, these approximations sacrifice animportant aspect of POMDPs: the ability toactively gatherinformation.
+
+% Intersection, probing other cars:
+% Planning for cars that coordinate with people: leveraging effects onhuman actions for planning and active information gathering overhuman internal state
+% Information Gathering Actions over Human Internal State
+% -> Our key insight is that robots can leverage their own actions to help estimation of human internalstate.
+
 
 \section{Outline}
