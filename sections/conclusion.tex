@@ -72,27 +72,20 @@ The generative model uses TORCS for the simulations of the driver states. TORCS 
 \label{sec:complex-driver}
 % Requirement for an accurate generative model
 
+The POMCP algorithm is taking a model-based planning approach. The driver models we use in our experiments are simple and not suited to accurately model real human behavior. The POMCP algorithm is dependent on the accuracy of the model used for forward simulation. In our experiments, the same model is used to represent the driver during evalution, and to simulate drivers for the search tree construction during planning. With a real human as driver, this is not possible. If the agent shares control over the car with a human, a sophisticated, accurate model is required for Monte-Carlo sampling during planning. Driver behavior modeling is an active research field. It is not within the scope of this thesis to provide an overview of driver modeling approaches. Extensive reviews of different methods can be found in literatue by \cite{model-review-3}, \cite{model-review-4}, and \cite{model-review-5}.
 
+The integration of a more advance driver model is straightforward. It can be used as a replacement of one of the three driver models we use for our experiments. The only requirement is that the agent needs to be able to provide a belief state (car state and driver model state) to the driver model, getting a driver action and the next driver model state in return. The exact composition of the driver model state can be arbitrary, as the agent never evaluates the driver model state directly but just stores it in a belief particle to be used in the next forward search.
 
 \subsection{Continuous action and observation space}
 \label{sec:conclusion-continuous}
 
+We utilize discretization to be able to use POMCP with a naturally continuous action and observation space (see Section \ref{sec:discretization}). Discretization is necessary for POMCP to work. However, it comes with the drawback of a loss of precision. Even if one would increase the resolution of the discretization - using more bins, some degree of information loss is inevitable. The alternative would be to work with the continuous spaces direclty. A switch from POMCP to another POMDP solver would be required for this.
 
-
-% TODO: Mention? Speaks for bad experiment design
-% \subsection{Using other POMDP solvers}
-
-% \item POMCP (Monte-Carlo tree search from the current belief using samples from a black-box simulator.)
-% \item DESPOT (Avoids POMCP’s extremely poor worst-case behavior by evaluating policies on a small number of sampled scenarios.)
-% \item DESPOT-IS (Importance sampling improves DESPOT’s performance when there are critical, but rare events, which are difficult to sample.)
-% \item HyP-DESPOT (Parallelization speeds up online planning by up to several hundred times, compared with the original DESPOT algorithm.)
-
-% How to get transition and observation probabilities?
-% Approximate enough?
-% Use supervised learning?
-% Use prior knowledge?
+Various solvers have been developed to work with fully continuous POMDP. Two algorithms worth mentioning are POMCPOW, an extension of POMCP using progressive widening \parencite{online_pomdp_cont}, and LABECOP, which, in contrast to POMCPOW, avoids limiting the number of observations considered during planning \parencite{online-cont-pomdp-2}. However, both methods require the observation probabilities $Z$ to be explicitly known, which is not the case in our scenario. One would need to find a way to circumvent this problem. A potential approach would be to approximate the observation probability distribution in some way but this is not further considered in this thesis.
 
 \subsection{Use of active probing}
+
+Human drivers likely react to the actions of the agent, with potentially different reaction times or bhavior for distracted drivers. The driver models used in our experiments did not account for this. \cite{att_intersec} show that actively probing human drivers can reduce the uncertainty about their mental state. Enabling the agent to gather information about the human by actively probing it might help to imptove the agent's performance. Therefore, in a scenario with a human driver, in which the internal state of the human is very complex and therefore hard to estimate, active probing, like intentional small steering actions, even if they are not necessary, could be used to gauge the state of the driver more accurately.
 
 %%%%%%
 % Step further: Active probing 
@@ -104,7 +97,7 @@ The generative model uses TORCS for the simulations of the driver states. TORCS 
 % -> Our key insight is that robots can leverage their own actions to help estimation of human internalstate.\
 
 %%%%%%
-% Step further: Bi-directional feedback
+% Step further: Bi-directional feedbackk
 
 % \cite{hitl_pomdp} uses feedback
 % Sharing Control With Haptics: Seamless Driver Support From Manual to Automatic Control
