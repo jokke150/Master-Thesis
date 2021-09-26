@@ -24,13 +24,15 @@ POMDPs are well suited to model driving problems in which the internal psycholog
 The aforementioned studies demonstrate that a POMDP is suitable for dealing with the uncertainty related to a person's internal psychological state and that this can be beneficial for making the right decisions when driving. However, they focus on judging about the state of external drivers. None of them apply POMDPs in a shared control driving scenario. 
 
 % Both papers implement assistance measures that warn the driver, and actively intervene in the car's control. 
-\cite{hitl_pomdp} introduce a framework to model shared control, human in the loop sceanrios using POMDPs. The benefits of the framework are exemplified by assisting a potentially drowsy driver with lane-keeping: The assistance system is able to reason about the driver's drowsiness effectively, assisting only when necessary, and can handle noisy or erroneous observations. A driver model is used to simulate human behavior and a simple car model is employed to simulate the car's dynamics in the experiments. However, the approach relies on the availability of observations that strongly correlate with the driver's drowsiness (observation whether the driver's eyes are closed or not).
+\cite{hitl_pomdp} introduce a framework to model shared control, human in the loop sceanrios using POMDPs. The benefits of the framework are exemplified by assisting a potentially drowsy driver with lane-keeping: The assistance system is able to reason about the driver's drowsiness effectively, and can handle noisy or erroneous observations. A driver model is used to simulate human behavior and a simple car model is employed to simulate the car's dynamics in the experiments. However, the approach relies on the availability of observations that strongly correlate with the driver's drowsiness (observation whether the driver's eyes are closed or not).
 
 % \cite{hitl-pomdp-2} use a similar approach to assist a potentially distracted driver in lane-keeping and collision avoidance tasks. 
 
 Research suggests that driver distraction can lead to a change in driving performance. Distracted drivers show certain behaviors, such as lane position deviations, infrequent steering wheel movements, and reduced reaction times \parencite{driver-distraction-review}. \cite{dist-det-perf} show that monitoring driving performance measures (steering wheel angle, heading angle and lateral deviation) alone can be sufficient to detect driver distraction accurately.
 
-In this thesis, an assisted lane-keeping scenario with a potentially distracted human in the loop is modeled as a POMDP. The requirement from \cite{hitl_pomdp} of observations that correlate very closely with the driver's psychological state is relaxed. The only observations available to the assistance system are the steering actions of the driver, the car's yaw angle, and its lateral deviation. Moreover, the number of considered discrete steering actions is substantially increased. The driving dynamics are simulated using a realistic driving simulator rather than a simple low-dimensional mathematical model.
+In this thesis, an assisted lane-keeping scenario, with a potentially distracted human in the loop, is modeled as a POMDP. The requirement from \cite{hitl_pomdp} of observations that correlate very closely with the driver's psychological state is relaxed. The only observations available to the assistance system are the steering actions of the driver, the car's yaw angle, and its lateral deviation. Moreover, the number of considered discrete steering actions is substantially increased. The driving dynamics are simulated using a realistic driving simulator rather than a simple low-dimensional mathematical model.
+
+% TODO: Lis contributions?
 
 %%%%%%
 % Contributions
@@ -105,12 +107,13 @@ The problem examined in this thesis is assisted lane keeping with shared control
 \noindent
 \textbf{The following research questions arise:}
 \begin{enumerate}
-    \item How can the interaction between the driver and the agent be modeled using a POMDP?
-    \item Which simplifications are necessary in order to address the problem?
-    \item How can a good policy for the agent be derived from the POMDP?
-    \item How does the agent perform with driver models of increasing complexity?
-    \item What measures are available to improve the agents performance?
-    \item Is the solution approach viable for a real-world scenario, and if not, what limitations are there and what are potential methods to solve them?
+    \item How can a lane-keeping scenario with shared control between a potentially distracted human driver and an agent be modeled using a POMDP?
+    % \item Which simplifications are necessary in order to address the problem?
+    % \item How can a good policy for the agent be derived from the POMDP?
+    % \item How does the agent perform with driver models of increasing complexity?
+    % \item What measures are available to improve the agents performance?
+    \item Can the agent estimate the driver's distraction using driver performance measures alone, allowing it to take appropriate actions when the driver becomes distracted?
+    \item Is the solution approach viable for a real-world scenario, and if not, what limitations are there, and what are potential methods to solve them?
 \end{enumerate}
 
 % TODO: Include? Isn't this going a bit too far? It is hard ro explain this without sophisticated background knowledge
