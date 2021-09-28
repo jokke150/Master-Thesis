@@ -1,201 +1,145 @@
 \chapter{Introduction}
 \label{sec:intro}
 
-% As autonomous systems become more advanced, drivers may engage less with the driving task, resulting in skill atrophy (Casner et al., 2016).
-
-% WHy an adaptive LKAS based on the distraction makes sense:
-% See: Online adaptation of the Level of Haptic Authority in a lane keeping system considering the driver’s state
-
-
-\iffalse
-
-Driver   inattention: inattention  occurs  when  the  driver’s  allocation  of resources  to  activities  does not  match  the  demands  of  activities  required  for  the control of safety margins.
-
-Driver distraction: where  the  driver  allocates  resources  to a  non-safety critical activity while the resources allocated to activities critical for safe driving do not match the demands of these activities.
-
-Types of distraction:
-    Visual: taking your eyes off the road
-    Manual: taking your hands off the wheel
-    Cognitive: taking your mind off driving2                             
-
-DISTRACTION
-
-Visual distraction or cognitive distraction have been investigated by combining vehicle state [36], [147], [148], drivers’ visual state [145]–[147], [149], and operations [147], [149], [191]. Answers to the question of how to measure a driver’s cognitive distraction have been given in [150]. Learning-based approaches such as deep sparse autoencoders [192], deep belief networks or DBNs [188], support vector machines (SVM) [145], [193] have been widely used to detect and classify driver distraction. \cite{shared_control}
-
-
-COGNITIVE MODEL
-
-One of the most utilized means is based on the “adaptive control of thought-rational (ACT-R) [141]”
-cognitive where the discrete nature of drivers’ control actions is captured from a cognitive perspective. For example, Salvucci et al. developed an integrated cognitive pathfollowing driver model [142] and lane-change driver model [143] using the combination of the ACT-R cognitive architecture and perceptual-motor process. \cite{shared_control}
-
-
-
-It is well known that manual control is prone to human errors. On the other hand, fully automated tasks are currently subject to wide-ranging limitations in decision-making and situationawareness. To exploit full potentials of both of human and automation while overcoming the barriers of car-to-driver transition, Mulder et al. [27] presented an entirely different control scheme – shared control systems3. The human driver and the automated driving agent continuously share and cooperatively complete a specific driving task, thereby allowing drivers to enjoy driving while keeping in control consistently. Moreover, the shared-control scheme can synergize innate human capacities and technological capabilities to enable us to realize our full potential [31].
-
-
-
-Keeping the lane is one of the primary tasks of controlling a vehicle. Especially on longtrips  on  extra-urban  roads  this  might  be  a  monotonous  and  annoying  taskwhere unintended lane departures may occur caused  by momentary lapses  ofattention or drowsiness. As a consequence of an unintended lane departure theremight happen a
-●Collision with a stationary object
-●Collision with a vehicle traveling in the same direction
-●Collision with oncoming traffic●Rollover accident
-●Collision with pedestrians and bicyclists beside the road
-●Further accident caused by failed corrective steering and braking (loss of vehiclecontrol)
-
-Generally speaking unintended lane departures are one major cause of severeaccidents. However, there might be various root causes of an unintended lane depar-ture like driver distraction, drowsiness, a temporary blackout of the driver, toohigh velocity (especially in curves), poor visibility of lane markers and road geometry,and more. These chains of cause and effect need to be considered for defining thescope  of  lane  keeping  and  lane  departure  warning  systems  as  well  as  theireffectiveness
-
-https://link.springer.com/referenceworkentry/10.1007%2F978-0-85729-085-4_26
-
-Theconcept of Honda LKA systems is based on a cooperative operation between driver andvehicle intended to lighten the operation load but at the same time not to diminish drivermotivation (Ishida et al.2003).
-
-
-the road to hell is paved with good intentions…
-https://delfthapticslab.nl/project/responsible-adaptation-of-lane-keeping-assistance/
-
-How can we assist drivers in lane-keeping, without inducing them to misuse this assistance to drive faster? This question relates to behavioral adaptation: a central concept in the design of assistance systems that we know in daily life as “the road to hell is paved with good intentions…”. It states that when we design systems that support humans, they often adapt their behavior in a way that mitigates the very benefits that the system aimed to realize. Advanced driver assistance systems (ADAS) are a well-known example of designs were anticipated safety benefits are diminished because drivers show undesired behavioral adaptations. Literature shows that ADAS lead to increased risk-taking, such as driving at a higher speed, driving closer to a lead vehicle, or performing distractive non-driving tasks[1].
-
-\fi
-
-%
-% Overview first: Tell a story
-%
-
-% See Examining the relationship between driver distraction and driving errors: A discussion of theory, studies and methods
-% Driver distraction is acknowledged internationally as a significant road safety concern (Regan et al., 2008).
-
 \section{Motivation}
 
-Fully autonomously driving cars have the potential to rule out human driving error which is at least a contributing factor to most accidents today. Many social and technical obstacles have yet to be overcome until fully autonomous cars become market-ready \parencite{autonomous_driving_book}. However, many \glspl{adas} such as adaptive cruise control, lane keeping and changing assistance, and automated collision mitigation are already deployed in modern cars. 
+% TODO: Definition of Distraction
+%       https://www.diva-portal.org/smash/record.jsf?pid=diva2%3A675328&dswid=-4959
+% TODO: Why not supervised learning?
 
-The extend to which an \gls{adas} takes control varies. While the potential prevention of human-error caused accidents increases with the elaborateness of intervention by an assistant system, excessive intervention drastically limits the driver's autonomy. A loss of driver autonomy can turn driving into a monotonous and tedious supervisory task. Drivers easily become inattentive and are more prone to distract themselves, for example by looking on their phone. However, as long as assistance systems are not sufficient to handle all situations, a concentrated human will remain necessary to take actions in situations the assistance system fails. Leaving the driver with a pure supervision task can lead to a long transition time for the driver when it is required to retake control of the vehicle \parencite{shared_control}. Being in control means having to concentrate. Therefore, the goal should be to keep the human driver in control as much as possible but to assist when help is really needed. As a result, driving pleasure is enhanced and drivers are prevented from relying too heavily on the assistance systems.
+Fully autonomously driving cars have the potential to rule out human driving error, which is at least a contributing factor to most accidents today. Many social and technical obstacles have yet to be overcome until fully autonomous cars become market-ready \parencite{autonomous_driving_book}. Cars will likely not be able to drive fully autonomously in the near future, continuing to require some degree of human supervision and intervention (\cite{human-needed}, and \cite{human-needed-2}). Before the introduction of fully autonomous driving, two transitional stages are conceivable \parencite{shared_control}: First, partially autonomous driving refers to the partial relinquishment of the responsibility of the driver. Only specific tasks, such as lane-keeping or cruise control, are delegated to an assistance system, while the driver retains the responsibility for other tasks. Second, conditional automation goes one step further; the car is controlled autonomously. Only if intervention by the driver is deemed necessary, the driver is alerted, and control is handed over. 
 
-% Human drivers and \gls{adas} often already \emph{share} the control over the car.
+Increasing intervention by an assistance system limits the driver's autonomy. A loss of autonomy can turn driving into a monotonous and tedious supervisory task. As a result, drivers may distract themselves more frequently \parencite{driver-distraction}, have reduced reaction times \parencite{reaction-time}, suffer from a lower situational awareness \parencite{situational-awareness}, and can place too much trust in the assistance system \parencite{over-trust}. Moreover, in the case of conditional automation, the time required for the driver to shift back to driving from a non-driving task may be too long in critical situations \parencite{takeover-time}. To mitigate these problems, \cite{shared-control-haptics} propose employing a shared control scheme: The driver and the assistance system continuously share the control authority of the car, cooperating in the driving task. The driver is kept in the loop. Thereby, the driving task stays enjoyable, and drivers are prevented from relying too heavily on the assistance systems.
 
-% The extend to which an \gls{adas} takes control varies. Some systems only suggest actions to the driver, others actively intervene in steering, acceleration, or braking, and semi-automated systems assume full authority over the car's control, leaving the driver only with the task of supervision. While the potential prevention of human-error caused accidents increases with the elaborateness of intervention by an \gls{adas}, excessive intervention drastically limits the driver's autonomy. 
+A large part of driving accidents are associated with driver distraction \parencite{distracted_nhtsa}. Therefore, it seems reasonable to make the extend of the assistance dependent on the driver's level of attention. Whenever a driver is inattentive or distracted, an assistance system needs to be particularly sensitive. \cite{disracted-lane-keeping-1} and \cite{disracted-lane-keeping-2} show that increasing the intensity of lane-keeping assistance when the driver is distracted increases lane-keeping performance, while the driver is not influenced in her driving while being attentive. 
 
-% Leaving the driver with a pure supervision task can lead to over-trust, neglect and complacency and may result in a long transition time for the driver when it is required to retake control of the vehicle \parencite{shared_control}. 
+However, the detection of driver distraction is complex. Methods like eye movement tracking \parencite{eye-movement}, head tracking \parencite{head-tracking}, and driver gaze monitoring \parencite{gaze-monitoring} have been proposed and proven to be successful. However, they all rely on continuous video recordings and analysis of the driver. This is a privacy intrusion and may not be desirable or impractical (e.g. low-light situations). 
 
-% Shared control of the car by a human driver and an agent acting as \gls{adas} allows to exploit both the human's and the agent's unique qualities. 
-
-% TODO: Add source for claim of different behavior when inattentive?
-15\% of injury crashes in the US were associated with driver distraction in 2018 \parencite{distracted_nhtsa}. Therefore, it seems reasonable to make the extend of the \gls{adas}'s activation dependent on the driver's level of attention. Whenever a driver is inattentive or distracted, an \gls{adas} needs to be particularly sensitive. Yet in what way can an assistance system detect that a driver is distracted? 
-
-\section{Problem overview}
-
-
-% TODO: Add literature to back up eye tracking machine learing claim
-There have bee attempts to develop systems that determining the psychological state of a driver in real time while driving. The application of eye tracking technology or analysis of camera footage using machine learning models is conceivable and has led to promising results. However, as promising as promising as these methods are, they are not readily available yet. Furthermore, they are quite intrusive and could be seen as an encroachment on privacy. Thus, the driver's level of attention is essentially unknown. Nevertheless, one can assume that distracted drivers act differently. Among other things, deviations such as increased reaction times and altered steering behavior are likely.
-
-% If any of clues are noticeable, the system needs to lower its activation threshold.
-
-% Besides  the  per-ception,  autonomous  driving  systems  constitute  of  multipletasks where classical supervised learning methods are no moreapplicable.  First,  when  the  prediction  of  the  agent’s  actionchanges  future  sensor  observations  received  from  the  envi-ronment under which the autonomous driving agent operates,for  example  the  task  of  optimal  driving  speed  in  an  urbanarea.  Second,  supervisory  signals  such  as  time  to  collision(TTC),  lateral  error  w.r.t  to  optimal  trajectory  of  the  agent,represent  the  dynamics  of  the  agent,  as  well  uncertainty  inthe  environment.  Such  problems  would  require  defining  thestochastic cost  function to be  maximized. Third, the  agent isrequired  to  learn  new  configurations  of  the  environment,  aswell  as  to  predict  an  optimal  decision  at  each  instant  whiledriving in its environment. This represents a high dimensionalspace given the number of unique configurations under whichthe agent & environment are observed, this is combinatoriallylarge. In all such scenarios we are aiming to solve a sequential decision  process,  which  is  formalized  under  the  classicalsettings  of  Reinforcement  Learning  (RL),  where  the  agent  isrequired  to  learn  and  represent  its  environment  as  well  asact  optimally  given  at  each  instan
-
-
-A two-fold problem arises: On the one hand, a lane keeping assistance system has to be able to identify when drivers are distracted by observing their behavior. On the other hand, the system must have the capability to provide meaningful assistance. 
-
-
-
-Intuitively, it seems reasonable to solve both problems individually; using a model that takes the available data, such as the driver's steering behavior, as input to classify whether the driver is distracted, and another model that assists a distracted driver in steering the car. Both could be trained using example data. However, this supervised approach entails two challenges: First, driving is a sequential decision process. An action influences future actions and driving situations in which decisions have to be made are essentially unique. Second, an activation of the assistance system can affect on how drivers behave. Drivers may adjust to the system. It is not possible to create a dataset that covers these dynamics entirely.
-
-
-%to learn
-%the differences in driving styles between attentive and distracted drivers from example data using supervised machine learning and then use this insight to conditionally intensify an \gls{adas} assistance. 
-
-
-
-\Gls{rl} allows a system to learn and represent its behavior by interacting with it rather than learning from past experience. Therefore, \gls{rl} constitutes a promising method to develop an \gls{adas} or even a fully autonomous driving agent and its application in this area is a very active research area with many successful results \parencite{rl_driving_survey}. Because learning is achieved by exploration rather than from examples, \gls{rl} is able to perform well in sequential decision making tasks. Moreover, reinforcement learning algorithms can be extended to support learning with a partially observable state \parencite[p.~466]{RL_introductio}. While the agent can perceive the car's environment with sensors, the attention level of the driver is hidden. Nevertheless, only one \gls{rl} agent is needed to both learn how to assist in driving and to classify when this is desired due to a distracted driver.
-
-The result is a shared control scenario where both the human driver and the agent can actively control (e.g. steer, brake, accelerate) the car simultaneously. Each can indirectly perceive the actions of the other by observing the state of the car. Thereby, on the one hand, the agent is able to analyze the driving behavior of the human and, on the other hand, the human can notice the assistance of the agent and may adapt to it. 
-
-% TODO: interaction loop
-
-% Offline: specify, prior to the execution, the best action to execute for all possible situations.
-
-% While these approximate algorithms can achieve very good performance, they often take significant time (e.g. more than an hour) to solve large problems, where there are too many possible situations to enumerate (let alone plan for). Furthermore, small changes in the environment’s dynamics require recomputing the full policy, which may take hours or days.
-
-% Whereas an offline search would compute an exponentially large contingency plan considering all possible happenings, an online search only considers the current situation and a small horizon of contingency plans.
-
-
-
-Learning in a real-world situation is not feasible in the context of this thesis. Despite the inevitable high safety risk, it would also require an enormous investment of resources, and the complexity of a real-world driving scenario represents an insurmountable obstacle. Instead, the agent learns in a simulation environment with a simulated human driver. \gls{torcs}, a racing car simulator that allows to model various driving situations \parencite{torcs} is used as simulation environment. It offers a good balance between realism and resource efficiency and has been utilized in many papers regarding \gls{rl}-based driving before. An \gls{act-r} cognitive model is employed to simulate the human's actions. The model is able to keep the car in its lane, perform lane changes, and avoid collision with other road users. It captures behavioral differences between attentive and inattentive human drivers. Furthermore, a human-subject experiment is performed in the \gls{torcs} simulation environment to identify if the agent is able to generalize well enough to be useful for actual human drivers.
-
-\section{Proposed solution approach}
+This thesis presents an alternative approach: A \Gls{pomdp} is used to model a shared-control lane-keeping scenario. A driver is assisted by a lane-keeping assistance system that estimates the driver's attentiveness online, based on the driver's past behavior. An explicit measurement of the driver's distraction is not required.
 
 \section{Related work and contributions}
 
-% See (POMDP, POMCP, Thesis) Towards Human-Like Prediction and Decision-Makingfor Automated Vehicles in Highway Scenarios
+POMDP is a framework to model sequential decision problems (one decision influences the next) in a partially observable environment \parencite{pomdp-definition}. An agent interacts with the environment. After performing an action, the agent receives observations about the environment, and a reward signal. It uses the observations it receives over time to estimate the environment's state in order to decide which actions to perform next in order to maximize the long-term reward.
 
-The main goal and differentiator of this thesis is to utilize reinforcement learning for a shared-control driving task with unknown attention of the human driver. One of the main challenges is that near real-time decisions of the agent are necessary. This drastically limits the time available for online planning. Accordingly, the implementation needs to be very efficient. Solving the problem using an algorithm that requires discretized states (e.g. steering angle categories) is contrasted with a solution using an algorithm directly supporting continuous states.
+POMDPs are well suited to model driving problems in which the internal psychological state of a human is important but unknown (such as her intend, goals, drowsiness, or attentiveness). Research mostly focuses on fully autonomous cars assessing the behavior of other traffic participants. By employing a POMDP to model the uncertainty about humans' internal states, improved driving policies were achieved in three, widely studied scenarios: pedestrian avoidance (\cite{despot-crowd}, and \cite{pomdp-pedestrian-avoid-2}), intersection crossing (\cite{pomdp-intersection}, \cite{att_intersec}, \cite{pomdp-intersection-2}, and \cite{pomdp-intersection-3}), and lane changes (\cite{pomdp-lane-changes}, \cite{att_intersec}, \cite{pomdp-lane-changes-2}, \cite{tactical-decision}, and \cite{pomdp_towards_human}). 
+
+The aforementioned studies demonstrate that a POMDP is suitable for dealing with the uncertainty related to a person's internal psychological state and that this can be beneficial for making the right decisions when driving. However, they focus on judging about the state of external drivers. None of them apply POMDPs in a shared control driving scenario. 
+
+% Both papers implement assistance measures that warn the driver, and actively intervene in the car's control. 
+\cite{hitl_pomdp} introduce a framework to model shared control, human in the loop sceanrios using POMDPs. The benefits of the framework are exemplified by assisting a potentially drowsy driver with lane-keeping: The assistance system is able to reason about the driver's drowsiness effectively, and can handle noisy or erroneous observations. A driver model is used to simulate human behavior and a simple car model is employed to simulate the car's dynamics in the experiments. However, the approach relies on the availability of observations that strongly correlate with the driver's drowsiness (observation whether the driver's eyes are closed or not).
+
+% \cite{hitl-pomdp-2} use a similar approach to assist a potentially distracted driver in lane-keeping and collision avoidance tasks. 
+
+Research suggests that driver distraction can lead to a change in driving performance. Distracted drivers show certain behaviors, such as lane position deviations, infrequent steering wheel movements, and reduced reaction times \parencite{driver-distraction-review}. \cite{dist-det-perf} show that monitoring driving performance measures (steering wheel angle, heading angle and lateral deviation) alone can be sufficient to detect driver distraction accurately.
+
+In this thesis, an assisted lane-keeping scenario, with a potentially distracted human in the loop, is modeled as a POMDP. The requirement from \cite{hitl_pomdp} of observations that correlate very closely with the driver's psychological state is relaxed. The only observations available to the assistance system are the steering actions of the driver, the car's yaw angle, and its lateral deviation. Moreover, the number of considered discrete steering actions is substantially increased. The driving dynamics are simulated using a realistic driving simulator rather than a simple low-dimensional mathematical model.
+
+% TODO: Lis contributions?
+
+%%%%%%
+% Contributions
+% \cite{hitl_pomdp} is quite simplistic - action model 
 
 
 
 
+% 1. POMDPs can do what I want them to do
+% 2. They have successfully been used in driving settings to model:
+%    - Pedestrian avoidance \cite{despot-crowd} \cite{pomdp-pedestrian-avoid-2}
+%    - Intersection behavior \cite{att_intersec} \cite{pomdp-intersection} \cite{pomdp-intersection-2} \cite{pomdp-intersection-3}
+%    - Lane changing \cite{att_intersec} \cite{tactical-decision} \cite{pomdp_towards_human} \cite{pomdp-lane-changes} \cite{pomdp-lane-changes-2}
+%    - Lane keeping
+%    - Traffic prediction \cite{pomdp_towards_human}
+% 3. Human-in-the-loop approaches (shared control)
+%    - Not much research has been conducted in this area
+%    - List papers that look at distraction
 
 
 
+% Using RL for lane keeping
+% End-to-End Deep Reinforcement Learning for LaneKeeping Assist
+% Design of a Reinforcement Learning-Based Lane Keeping Planning Agent for Automated Vehicles
+
+% Modeling other people's/ driver's hidden psychological states
+% Intention-Aware Online POMDP Planning for Autonomous Driving in a Crowd
+% Towards Human-Like Prediction and Decision-Making for Automated Vehicles in Highway Scenarios
+% Probabilistic Motion Planning in Uncertain and Dynamic Environments
+
+% Lane change POMDP
+% Tactical Decision-Making for Highway Driving
+
+% Intersection POMDP
+% 
+
+% Pedestrian avoidance POMDP
+% Intention-Aware Motion Planning
+% Intention-Aware Online POMDP Planning for Autonomous Driving in  a Crowd
+% Closing the Planning-Learning Loop with Application to Autonomous Driving in a Crowd
+
+%%%%%%
+% Shared control
+
+% General shared control driving:
+% Sharing Control With Haptics: Seamless Driver Support From Manual to Automatic Control
+
+% Drowsy driver: A POMDP Framework for Human-in-the-Loop System
+
+
+% Improving Human-In-The-Loop Decision Making In Multi-Mode Driver Assistance Systems Using Hidden Mode Stochastic Hybrid Systems
+% Lane keeping and lane change - Active control or warning
+% Distracted driver
+% Distraction is classified by monitoring the driver's smartphone use
+% -> The agent has some clear clues on whether the driver is distracted or not. We only base the estimate on the driver's past behavior
+% continuous car state is known to the agent
+% Reward function includes driver's attentiveness. This is not realistic, as the attentiveness is unknown. 
+% Only discrete states are hidden and there are only discrete control inputs.
+% Existing commercial driver assistance systems, including automatic braking systems and lane-keeping systems, may monitor the state of the vehicle or the environment to determine whether the systems should intervene. However, the state of the human driver is not typically included in the decision making process. In this paper, we propose to use hidden mode stochastic hybrid systems to model the interaction between the human driver and the vehicle. We show that by monitoring the human behavior as well as the vehicle state, we can infer the human state and enhance the quality of decision making in a driver assistance system.
+
+
+%%%%%%
+% Reward formulations
+% \cite{reward1}; \cite{reward2}
+
+
+\section{Problem overview and research questions}
+
+The problem examined in this thesis is assisted lane keeping with shared control by a potentially distracted human driver and an agent acting as an assistance system. The agent assists the driver in keeping the car centered in its lane. The driver becomes distracted periodically. During distraction episodes, the driver may act suboptimally. The driver's behavior is simulated using a driver model. The driver’s attentiveness is unknown to the agent. It has to infer if the driver is distracted from the driver's past steering activity, and sensory observations about the car's state. The dynamics of the car are simulated using the driving simulator \Gls{torcs}. A POMDP model is employed to accunt for the uncertainty about the driver's attentiveness.
+
+\vspace{1em}
+\noindent
+\textbf{The following research questions arise:}
+\begin{enumerate}
+    \item How can a lane-keeping scenario with shared control between a potentially distracted human driver and an agent be modeled using a POMDP?
+    % \item Which simplifications are necessary in order to address the problem?
+    % \item How can a good policy for the agent be derived from the POMDP?
+    % \item How does the agent perform with driver models of increasing complexity?
+    % \item What measures are available to improve the agents performance?
+    \item Can the agent estimate the driver's distraction using driver performance measures alone, allowing it to take appropriate actions when the driver becomes distracted?
+    \item Is the solution approach viable for a real-world scenario, and if not, what limitations are there, and what are potential methods to solve them?
+\end{enumerate}
+
+% TODO: Include? Isn't this going a bit too far? It is hard ro explain this without sophisticated background knowledge
+% \section{Proposed solution approach}
 
 \section{Outline}
 
-The rest of the proposal is organised as follows:
+The remaining content of the thesis is organised as follows:
 \begin{description}
-    \item[\cref{sec:problem}]
-    describes the problem in a formal manner using a \gls{pomdp}.
+    \item[\cref{ch:theory}] intoduces the basic theoretical \gls{pomdp} concepts which serve as a foundation for the thesis.
+
+    \item[\cref{ch:problem}]
+    presents the methodology that was applied, including the definition of the POMDP used to model the shared control lane-keeping task, and the chosen solution approach.
     
-    \item[\cref{sec:literature}]
-    summarizes and reviews important literature that serves as the foundation of the thesis.
+    \item[\cref{ch:setup}]
+    describes the experiments that are performed to access the performance of the solution approach.
     
-    \item[\cref{sec:plan}]
-    presents the initial research plan for the rest of the thesis, including important milestones and deadlines.
+    \item[\cref{ch:results}]
+    showcases the results from the experiments.
+
+    \item[\cref{ch:discussion}]
+    analyzes the results and elaborates the limitations of the solution approach.
+
+    \item[\cref{ch:discussion}]
+    highlights the conclusion, contributions, and challenges for a potential future real-world application.
+
 \end{description}
-
-
-\iffalse
-
-\cite{hitl_pomdp} define a similar \gls{pomdp} problem. An agent is supposed to activate a warning signal if the driver is drowsy and actively interfere by steering the car if the warning is unsuccessful in alerting the driver. The model representing the transition probabilities of the driver's interal state and action choice in \cite{hitl_pomdp} are arbitrarily constructed and likewise very simplified. A more realistic driving setting also requires a more sophisticated driver model. 
-
-
-% An offline randomized point-based value iteration approach is employed to solve the POMDP for an approximate optimal policy. The policy is computed by iteratively sampling a finite set of random points from the agent's belief space. The agent thus interacts randomly with the environment in order to find an approximation of an optimal policy. 
-
-% However, the state space is discretized and of low complexity. Solving large \gls{pomdp} requires the use of an online solver that plans from the current belief \parencite{online_pomdp_cont}. Not every point in the general belief space may be (easily) reachable, making some potential beliefs less important to consider for planning.
-
-% Moreover, the model representing the transition probabilities of the driver's interal state and action choice in \cite{hitl_pomdp} are arbitrarily constructed and likewise very simplified. A more realistic driving setting also requires a more sophisticated driver model. 
-
-\fi
-
-
-% TODO: Decide:
-% - discrete vs continuous state and action space
-% - online or offline belief state planning
-% - model based or model-free 
-% - how simple must the scenario be
-
-
-
-% Instead of limiting the state and action space to discrete values, continous states and actions are considered in this thesis. Moreover, 
-
-
-
-
-% The driving scenario, and with it also the \gls{pomdp}, become significantly more complex. An online \gls{rl} algorithm is applied in order to learn the agent's policy.
-
-
-
-
-
-% TODO: Goal and main distinction from prior work
-
-
-
-
-% Advantages + Disadvantages: \cite{online_pomdp}
-
-% Utilizing online \gls{pomdp} planning in a driving task with a hidden inner psychological state of a human driver constitutes a of this thesis. Most previous work focused on solving for an approximately optimal policy offline. 
-
-
-
-
-
-
-
-
-
-
