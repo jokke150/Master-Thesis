@@ -143,37 +143,33 @@ Equation \ref{eq:reward} shows the reward function for the agent that incorporat
 \subsection{Observations and observation probabilities}
 \label{sec:observations}
 
-% TODO: List of observations
-
 \input{sections/tables/observations.tex}
 
-The observation space $O$ includes all possible observations. The agent observes sensory information about the car's current distance to the road and relative yaw angle (see \ref{sec:observations}). Moreover, the driver's last action is observed. At any time step, the agent only receives the action of the driver for the last time step. Thereby, part of the planning process can be performed during policy execution (see section \ref{sec:driver_model}).
-
-In a POMDP, the agent has only partial information about the true state of the environment. The information the agent has stems from observations it makes by interacting with the environment. For the shared control lane-keeping task, the agent is given an observation after every steering action (after every 0.1 seconds of simulated time). It observes the current horizontal position of the car (lane centeredness), the car's relative yaw angle with respect to the track axis, and the driver's action from the last time step. The driver's current steering action is not observable. The agent has to estimate the most likely next action of the driver by considering the history of past observations. 
-
-The observations are discrete. The lane centeredness is originally in a continuous interval of $(-\infty,\infty)$, with values in between -1 (right lane border) and +1 (left lane border) denoting that the car is within its lane, and everyting beyond standing for an off-track position (see figure \ref{fig:observations}). 99 discrete values represent evenly spaced segments between -1 and +1, and two additional values stand for left off lane and right off lane positions. The angle is transformed from an interval of $[-\pi, +\pi]$ radians to 101 discrete values representing evenly spaced segments. The driver's action is discretized as stated in the last section.
-
-% The conditional state transition probabilities $T$ and the conditional observation probabilities $Z$ are not explicitly given but implicitly defined by TORCS and the driver model. Each offer an interface to be used as a generative model by the agent (see section \ref{sec:gen_model}).
-
-% TODO: Add: The agent can only recognize a state change of the driver after the driver has performed the first action in this state. This is because there are no observable clues about the duration of the driver's attentiveness and distraction.
+\noindent
+The observation space $O$ includes all possible observations. The observed attributes are displayed in table \ref{tab:observations}. The agent observes sensory information about the car's current lane centeredness and relative yaw angle. Moreover, the driver's last action is observed. At any time step, the agent only observes the action of the driver for the last time step. The agent has to estimate the most likely next action of the driver by considering the history of past observations. The observations are discrete. They are discretized by mapping their naturally continuous values to the closest value from the values listed in table \ref{tab:observations}. The conditional observation probabilities $Z$ are not explicitly given but implicitly defined by the dynamics of TORCS and the driver model.
 
 \section{Solution approach using the POMCP algorithm}
 
-\subsection{General POMCP definition}
+\subsection{Solving procedure of POMCP}
 \label{sec:pomcp}
 
+% The key idea of POMCP is that the same simulations used to explore the tree are used for the belief state updates
+
+The key idea of \Glsentryfull{pomcp} is to use Monte Carlo sampling both to sample start states from the belief and to sample histories using a generative model \parencite{pomcp}. Both the curse of dimensionality and the curse of history are \emph{broken} (see section \ref{sec:curses}). By means of the sampling, only a subset of histories is considered. The size of the belief tree is effectively limited (see figure \ref{fig:full_vs_pomcp}). Start belief states are sampled from the sampled states. This reduces the number of considered belief states.
+
+POMCP is an anytime, online solver. For an online solver, policy computation (planning) and execution (acting) are intertwined. An anytime algorithm builds the solution incrementally. It can be stopped at any time and there will be a solution, albeit the solution might not be very good if the algorithm is stopped early.
+
+% The number of histories to consider in a POMDP grows exponentially with respect to the depth of the planning horizon. This is called the curse of history. POMCP overcomes this limitation by using a generative model to sample state transitions. By doing so, only a subset of histories is considered; the size of the belief tree is reduced and the curse is \textit{broken} (see figure \ref{fig:full_vs_pomcp}). Furthermore, there is the curse of dimensionality. The belief space has the same dimensionality as the number of states. Thus, the number of beliefs to consider grows exponentially with the number of states. POMCP uses the states encountered during the construction of the tree to represent the belief. Start belief states are sampled from these states, effectively limiting the number of considered belief states and thereby also breaking the second curse. 
+
 \begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.8\textwidth]{figures/pomcp_belief_tree.pdf}
-    \caption[A full belief tree in contrast with a POMCP belief tree]{Contrasting a full belief tree (left) with a POMCP belief tree (right) for a POMDP with two actions and two observations and a time horizon of two. A belief is stored at every circle node. The full belief tree has 21 belief nodes, while the POMCP belief tree has just nine. The number of nodes of the full belief tree grows exponentially with the time horizon (curse of history), whereas the POMCP belief tree only contains a number trajectories which have been sampled from a generative model. By performing the sampling, the size of the tree is reduced and the curse is \textit{broken}.}
+    \centerfloat
+    \includegraphics[width=1.1\textwidth]{figures/pomcp_belief_tree.pdf}
+    \caption[A full belief tree in contrast with a POMCP belief tree]{Contrasting a full belief tree (left) with a POMCP belief tree (right) for a POMDP with two actions and two observations and a time horizon of two. A belief is stored at every circle node. The full belief tree has 21 belief nodes. POMCP reduces the number of considered belief nodes by sampling the histories to only nine. \emph{Note: The numbers in the example and the size reduction are arbitrarily chosen for this example.}}
     \label{fig:full_vs_pomcp}
 \end{figure}
 
-The key idea of \Gls{pomcp} is to use Monte Carlo sampling both to sample start states from the belief and to sample histories using a generative model \parencite{pomcp}. POMDP is an anytime online solver. For an online solver, policy computation (planning) and execution (acting) are intertwined. An anytime algorithm builds the solution incrementally. It can be stopped at any time and there will be a solution, albeit it might not be very good if the algorithm is stopped early.
-
-The number of histories to consider in a POMDP grows exponentially with respect to the depth of the planning horizon. This is called the curse of history. POMCP overcomes this limitation by using a generative model to sample state transitions. By doing so, only a subset of histories is considered; the size of the belief tree is reduced and the curse is \textit{broken} (see figure \ref{fig:full_vs_pomcp}). Furthermore, there is the curse of dimensionality. The belief space has the same dimensionality as the number of states. Thus, the number of beliefs to consider grows exponentially with the number of states. POMCP uses the states encountered during the construction of the tree to represent the belief. Start belief states are sampled from these states, effectively limiting the number of considered belief states and thereby also breaking the second curse. 
-
-POMCP constructs a search tree representing histories $h$ of actions and observations. At each node, $N(h)$ stores the number of times the node and thereby the coresponding history $h$ has been visited during the sampled trajectories simulated with the generative model. $V(ha)$ gives the action node's expected value that is approximated by the average return of simulations starting at history $h$ and performing action $a$. At every observation node, the belief over the states is maintained by employing a particle filter. Each observation node stores a collection of all states that led to the represented observation during planning. Whenever an observation occurs, the corresponding state is stored in this collection. The states in the collection are called particles and together the particles represent the agent's belief B(h) at the corresponding observation node. The more likely a belief state is, the more often it occurs as a particle in the belief. By using the particle filter method, expensive belief update calculations are not necessary. The collection of states alone aproximates the posterior probability distribution for the belief.
+\noindent
+POMCP constructs a search tree representing histories $h$ of actions and observations (see right side of figure \ref{fig:full_vs_pomcp}). At each belief node, $N$ stores the number of times the node and thereby its corresponding history has been visited during the sampled trajectories. $V$ gives the action node's expected value that is approximated by the average return of searches passing through the node. The belief $B$ over the states is maintained by employing a particle filter approach. The belief is represented by a collection of all states that led to a certain observation during planning. Whenever an observation occurs, the corresponding state is stored in this collection. The states in the belief collection are called particles. The more likely a belief state is, the more often it occurs as a particle in the belief. By using the particle filter method, expensive belief update calculations are not necessary. The collection of states alone approximates the posterior probability distribution for the belief.
 
 \begin{figure}[htbp]
     \centerfloat
@@ -182,7 +178,29 @@ POMCP constructs a search tree representing histories $h$ of actions and observa
     \label{fig:pomcp}
 \end{figure}
 
-Figure \ref{fig:pomcp} illustrates the process of POMCP. The algorithm starts with an initial belief about the environment. If the belief for the current history $h_{real}$ does not contain particles in the beginning of a planning episode, the agent has lost track of the environment's state completely. One could construct a new belief by sampling the state space in this case. However, for the car driving scenario, this approach is too inaccurate. Accessing the real state of the environment to build the belief would be cheating. Instead, we consider the planner to have failed and select actions randomly from this point on.
+% The algorithm starts with an initial belief about the environment.
+% One could construct a new belief by sampling the state space in this case. However, for the car driving scenario, this approach is too inaccurate. Accessing the real state of the environment to build the belief would be cheating. Instead, w
+
+\noindent
+Figure \ref{fig:pomcp} illustrates the process of POMCP.  If the belief for the current history $h_{real}$ does not contain particles at the beginning of a planning episode, the agent has lost track of the environment's state completely. If this happens, we consider the planner to have failed and select actions randomly from this point on. Otherwise, a start state for a search (forward simulation) is sampled from the belief at the current history. The search tree is searched in two stages: Simulation and rollout. 
+
+% During the simulation stage, no new nodes are added to the tree.
+
+As long as the search tree contains child nodes for all actions, the simulation stage is active.  During the simulation stage, actions are selected using the \glsentryfull{ucb1} algorithm \parencite{ucb1}.
+
+
+The tree is searched using the \glsentryfull{ucb1} algorithm to select actions \parencite{ucb1}. UCB1 chooses actions by the principle of optimism in the face of uncertainty. Even with limited knowledge, the algorithm selects the best action greedily. If this optimistic guess turns out to be correct, the algorithm can further continue to exploit this action, and regret is kept to a minimum. If the action leads to a bad return, its value is assumed to deteriorate quickly, allowing the algorithm to select an alternative action. Exploration is controlled by enhancing the value of rarely-tried actions with a fixed exploration constant.
+
+% TODO: Incorporate N, Vin UCB1 formula
+
+If any history is visited for the first time during the simulation stage, the algorithm continues in the rollout stage. First, all action nodes are initialized with initial counts an values. These are usually zero, unless preferred actions are used (See section \ref{sec:preferred_actions}). Then, the history is \textit{rolled out} further using uniformly random action selection.
+
+
+% The depth of the tree is only increased by one during the rollout phase.
+
+State transitions are simulated using the generative model. Given the current history and chosen action, the generative model returns a successive state $s'$, observation $o$, and reward $r$. The successive state $s'$ is then added to the belief at the observation node corresponding to $o$, and the count for the current history is incremented. The search continues from $s'$ in the same manner. 
+
+
 
 To select which action to perform in the real environment, a fixed number of forward searches is performed from the current history (often a certain maximum planning time is used alternatively). During these searches using the generative model, the belief and the expected action values are updated. After all searches are complete, the action $a_{best}$ with the highest value at the current history $h_{real}$ is returned. After this action is executed in the real environment, with an observation $o_{last}$ the tree can be pruned. Only the nodes from history $h_{real}a_{best}o_{last}$ onward stay relevant as all other histories are rendered impossible. Then, the process repeats from the new history.
 
@@ -190,13 +208,14 @@ The number of searches that is performed during the planning has a substantial i
 
 With the number of searches, the computational complexity 
 
-The start state for each search is sampled from the belief at the curret history. The search tree is searched in two stages: Simulation and rollout. As long as the search tree contains child nodes for all actions at the currently considered history, the simulation stage is active. During the simulation stage, no new nodes are added to the tree. The tree is searched using the \glsentryfull{ucb1} algorithm to select actions \parencite{ucb1}. UCB1 chooses actions by the principle of optimism in the face of uncertainty. Even with just little knowledge, the algorithm selects the best action greedily. If this optimistic guess turns out to be correct, the algorithm can further continue to exploit this action and regret is+ kept to a minimum. If the action leads to a bad return, its value is assumed to deteriorate quickly, allowing the algorithm to select an alternative action. Exploration is controled by enhancing the value of rarely-tried actions with a fixed exploration constant. 
+
 
 % TODO: Explain exploration constant in more depth
 
-State transitions are simulated using the generative model. Given the current history and chosen action, the generative model returns a successive state $s'$, observation $o$, and reward $r$. The successive state $s'$ is then added to the belief at the observation node corresponding to $o$ and the count for the current history is incremented. The search continues from $s'$ in the same manner. 
 
-If any history is visited for the first time during the simulation stage, the algorithm continues in the rollout stage. First, all action nodes are initialized with initial counts an values. These are usually zero, unless preferred actions are used (See section \ref{sec:preferred_actions}). Then, the history is \textit{rolled out} further using uniformly random action selection and the generative model. The process is continually repeated using the succeeding states from the generative model until a maximum depth is reached in the tree. During the rollout, no further nodes than the ones just initialized are added to the tree. The tree's growth is thereby limited to one level of depth per search. The main purpose of the rollout is to form a first estimation of the newly encountered history. After every search, the values at all nodes encoutered during the search are updated by backpropagating the rewards through the tree.
+
+
+The process is continually repeated using the succeeding states from the generative model until a maximum depth is reached in the tree. During the rollout, no further nodes than the ones just initialized are added to the tree. The tree's growth is thereby limited to one level of depth per search. The main purpose of the rollout is to form a first estimation of the newly encountered history. After every search, the values at all nodes encoutered during the search are updated by backpropagating the rewards through the tree.
 
 \subsection{Action and observation space discretization}
 \label{sec:discretization}
