@@ -31,10 +31,9 @@ Rather than experimenting with real humans and a real car, simulation models are
 
 \glsentryfull{torcs} is an open-source car driving simulator \parencite{torcs}. As the name suggests, TORCS was initially developed to simulate racing car tournaments. However, as racing cars are fundamentally also just cars and everything, including the tracks, is highly customizable, highway driving can be simulated just as well. Part of TORCS is a comprehensive and realistic discrete-time simulation engine to simulate car dynamics, as well as an \glsentryshort{api} for computer-controlled drivers, so-called robots. It has been widely used by researchers to simulate car driving and to evaluate the performance of autonomous driving agents (for example in \cite{torcs-3}, \cite{torcs-1}, \cite{torcs-2}, and \cite{reward1}).
 
-TORCS is used for two purposes in this thesis. First, its simulation engine serves as the environment for the agent and driver. The steering actions of the agent and driver are combined in a TORCS \emph{robot} satisfying the driver interface. TORCS maintains the car's true state and updates it based on the combined steering action. Second, the simulation engine is used as a generative model to sample state and observation transisitions for the forward search performed during the agent's online MCTS policy computation (planning).  
+We use TORCS as a simulator for car dynamics for two purposes. First, to simulate the dynamics of the car the agent and the driver share control over. This simulation is part of the environment of the agent. It represents the car in the real world and would be replaced by an actual car in a realistic setting. TORCS maintains the car's true state and updates it based on the combined steering action. Second, we use the simulation engine as a generative model (see section \ref{sec:gen_model}). The generative model is part of the agent, constituting the agent's model of the world. The agent uses it to sample state and observation transitions for the forward search performed during the online MCTS policy computation (planning).
  
- 
-% TODO: Move this to the next chapter?
+% TODO: Move to experiment setup?
 \begin{figure}[htbp]
     \centerfloat
     \includegraphics[width=1.0\textwidth]{figures/track.pdf}
@@ -42,12 +41,12 @@ TORCS is used for two purposes in this thesis. First, its simulation engine serv
     \label{fig:track}
 \end{figure}
 
-Typical racing tracks for TORCS have sharp road bends and a generally wide road which can have different widths in its course. This does not reflect a highway driving scenario well. Therefore, a custom highway track is used instead (see figure \ref{fig:track}). The custom track only has moderate road bends and a constant lane width of 3.75m, as it is common in Europe \parencite{lane_width}. The road is completely flat and there are no other cars on it. Moreover, a fixed speed of 80 km/h is set during experiments.
+Typical racing tracks for TORCS have sharp road bends and wide roads with differing widths around the course. This does not reflect a highway driving scenario well. Therefore, a custom highway track is used instead (see figure \ref{fig:track}). The custom track only has moderate road bends and a constant lane width of 3.75m, as it is common in Europe \parencite{lane_width}. The road is completely flat and there are no other cars on it. Moreover, a fixed speed of 80 km/h is set during our experiments.
 
 \subsection{Driver model}
 \label{sec:driver_model}
 
-Instead of performing experiments with an actual human driver, the driver is simulated using a stochastic driver model. The driver model determines when a driver is attentive or becomes distracted, for how long the attentive or distracted period persists, and what actions the driver takes. The driver model is rather simple. If the agent can plan successfully with a simple driver model, this serves as an initial confirmation that the solution approach is promising. The focus of this thesis is not a realistic driver model.
+In this study, the driver is simulated using a stochastic driver model, instead of performing experiments with an actual human driver. The driver model determines when a driver is attentive or becomes distracted, for how long the attentive or distracted period persists, and what actions the driver takes. We design a simple driver model to evaluate our approach. If the agent can plan successfully with a simple driver model, this serves as an initial confirmation that the solution approach is promising. The focus of this thesis is not a realistic driver model.
 
 % TODO: Add driver model illustration
 
@@ -56,41 +55,50 @@ Instead of performing experiments with an actual human driver, the driver is sim
 
 Three different driver model configurations with increasingly complex dynamics are used in the experiments:
 \begin{enumerate}
-    \item \textbf{Simple driver model:} The simplest model steers optimally when the driver is attentive, and if it is in a distracted state, the model repeats the last attentive steering action until the driver regains her attentiveness. A distracted driver's ability to notice changes in the course of the road is limited because of a reduced situational awareness and therefore she does not adjust to road changes like an attentive driver would (\cite{driver-awareness}; \cite{driver-awareness2}).
-    \item \textbf{Steering overcorrection:} Another, more complex scenario, is based on the assumption that a driver who has just regained attentiveness after having been distracted performs an overly strong steering correction during her first action, and thereby overshoots. The first action of the attentive driver is increased by a random amount between 10 and 25 percent. The overcorrection is added to the continuous driver action before discretization.
-    \item \textbf{Steering overcorrection and noise:} The last, most complex scenario introduces action noise. It acts just like the second scenario, just with an additional random noise between five and 20 percent. The action can thereby become five to 20 percent stronger or weaker. The noise is intended to make the driver less predictable. It is also added before the action discretization is applied.
+    \item \textbf{Simple driver model:} The simplest model steers optimally when the driver is attentive. If it is in a distracted state, the model repeats the last attentive steering action until the driver regains her attentiveness. A distracted driver's ability to notice changes in the course of the road is limited because of a reduced situational awareness, and therefore she does not adjust to road changes like an attentive driver would (\cite{driver-awareness}; \cite{driver-awareness2}).
+    
+    % TODO: ADD citation
+    \item \textbf{Steering overcorrection:} When a distracted driver diverts strongly from the lane center and then becomes attentive again, the driver could get startled. Our assumption is that in this case, the driver would perform an overly strong steering correction during her first attentive action and thereby overshoot. We implemented this in a second, more complex model. The first action of a driver that regains attentiveness is increased by a random amount between 10 and 25 percent. The randomness makes the model less predictable when the driver becomes attentive again.
+    \item \textbf{Steering overcorrection and noise:} The last, most complex scenario introduces action noise. A random noise between five and 20 percent is added to every action the driver takes. The action can thereby become five to 20 percent stronger or weaker. The overcorrection for the first action after regaining attentiveness, introduced in the last model, is performed as well. The noise is added on top. The noise makes the driver less predictable in every situation.
 \end{enumerate}
 
 
 \section{Lane keeping with a human in the loop as a POMDP}
 \label{sec:lane_keeping_loop}
 
-% The problem can be formulated as a POMDP as follows (see section \ref{sec:pomdp} for a general definition of a POMDP).
+In this section, we formulate the shared control lane-keeping problem as a POMDP. Refer to section \ref{sec:pomdp} for a general definition of a POMDP. In the following subsections, we define the state space and the state transition probabilities, the action space, the reward function, and the observation space with the observation probabilities. 
 
+\subsection{States and transition probabilities}
 
+The overall state space $S$ consists of all possible states of the agent's environment. For the agent, the environment is compiled of both the driver and the car. Therefore, the state space we have to consider in the POMDP is the combination of all possible combinations of the state of the car and the state of the driver model. The state transition probabilities $T$ are not explicitly given but implicitly defined by the car dynamics simulated by TORC's simulation engine.
 
-% - The driver and the agent will cooperatively control the car. 
-% - As for the RL agent, both the driver and the car can be seen as the environment. 
-
-\subsection{State}
-
-The overall state space $S$ is composed of all possible states of the agent's environment. For the agent, the environment is composed of both the driver and the car. Therefore, the state we have to consider in the POMDP is the combination of the state of the car and the state of the driver model.
-
-\subsubsection{Car state}
+\subsubsection*{Car state}
 \label{sec:state}
 
-TORCS data model for the car state is too extensive to list here in full\footnote{See tCar struct in the \href{https://sourceforge.net/projects/torcs/files/api-docs/}{TORCS API documentation}}. Most important are the car's position on the track, its current velocity and its accelleration. Among others, there are additional attributes for the state of transmission and engine, the friction and spin of the wheels, and aerodynamic influences such as the current air speed. The values in the state are continuous. Since the problem is a lane keeping task, any state representing a lane departure is consiered a \emph{terminal state}, resulting in the end of an experiment. The car is considered to have departed from its lane if the center of car lies more than 20cm beyond side lane markings.
+TORCS data model for the car state is too extensive to list here in full\footnote{See \emph{tCar} struct in the \href{https://sourceforge.net/projects/torcs/files/api-docs/}{TORCS API documentation}}. table \ref{tab:state} shows the most important attributes. These include the car's position on the track, its current velocity, and its acceleration. Among others, there are additional attributes for the state of transmission and engine, the friction and spin of the wheels, and aerodynamic influences such as drag and lift. The values in the state are continuous. 
 
-The state is updated by the simulation engine every 0.002 seconds of simulated time (this is the driving time that is simulated, not real time). By default, robots provide new control actions to the car every 0.02 seconds. However, for the experiments in this thesis, a rate of 0.1 seconds is chosen. This makes the ride less smooth but reduces the frequency in which the agent has to plan ahead, reducing the amount of planning time. The steering action is repeated until a new one is provided.
+\input{sections/tables/state.tex}
 
-\subsubsection{Driver state}
+\noindent
+The lateral position (lane centeredness) and the yaw angle of the car are illustrated in figure \ref{fig:observations}. The lane centeredness of the car is defined over a continuous interval of $(-\infty,\infty)$, with values in between -1 (right lane border) and +1 (left lane border) denoting that the car is within its lane, and everyting beyond standing for an off-track position. A value of zero means the car is centered in its lane. The car's relative yaw angle is given with respect to the track direction and defined over an interval of $[-\pi, +\pi]$ radians. A value of zero indicates that the car is heading in the same position as the track.
+
+\begin{figure}[htbp]
+    \includegraphics[width=0.6\linewidth]{figures/angle_distance.pdf}
+    \centering
+    \caption{Illustration of lane centeredness and yaw angle values}
+    \label{fig:observations}
+\end{figure}
+
+\subsubsection*{Driver state}
 \label{sec:driver_state}
-The driver state consists of two variables: The current state (attentive or distracted), and the duration it remains in its current state. The driver model is initially set to an attentive state. The duration it remains in this state is randomly chosen but lies between one second (10 actions) and 5 seconds (50 actions) of simulated time. Every 0.1 seconds, an action is chosen depending on the driver's current state. Afterwards, the remaining duration is decremented by 0.1. When the time runs out for the curren state, the state reverses; an attentigve driver becomes distracted and a distracted driver regains attentiveness. The duration for the resulting state is randomly chosen again. The process repeats until the experiment is over.
+The driver state consists of two variables: The current state (attentive or distracted) and the duration it remains in this current state. The duration it remains in a state is randomly chosen but lies between one second (10 actions) and 5 seconds (50 actions). When the time runs out for the current state, the state reverses; an attentive driver becomes distracted, and a distracted driver regains attentiveness. The duration for the next state is randomly chosen again. The process repeats until the experiment is over.
 
 \subsection{Actions}
 \label{sec:actions}
 
-The action space $A$ consists of all steering actions \emph{the agent} can perform (see \ref{sec:actions}). In the experiments, two different sets of actions are referred to: First, a full action set, which enables the agent to overrule and effectively reverse the driver's actions completely. Second, a reduced action set containing only moderate steering actions.
+% TODO: Illustrate action to steering angle mappings 
+
+The action space $A$ consists of all steering actions \emph{the agent} can perform. In the experiments, two different sets of actions are referred to: First, a full action set, which enables the agent to overrule and effectively reverse the driver's actions completely. Second, a reduced action set containing only moderate steering actions (reduced action space in table \ref{tab:actions}). The motivation behind this is the assumption that strong steering actions are seldomly needed while driving on a highway. Leaving them away might reduce the planning complexity.
 
 The human driver and the agent share control of the steering wheel. The steering input of the driver $a_{driver}$ and agent $a_{agent}$ are added to $a_{car} \in [-1, +1]$ using Equation~\ref{eq:steering}. A steering action of $-1$ means steering fully to the right (159 degrees), and an action of $+1$ has the effect of fully steering to the left (21 degrees). 
 
@@ -99,14 +107,17 @@ The human driver and the agent share control of the steering wheel. The steering
     \label{eq:steering}
 \end{equation}
 
-Table \ref{tab:actions} shows the discrete actions for the driver and the agent. The discrete values have been chosen empirically. More actions allow for a more precise control. However, the number of actions is the branching factor for the search tree the agent constructs to solve the POMDP, and thus has a big impact on the complexity of the search problem. Therefore, a compromise between precision and performance is made. Because minor actions are more likely and generally preferable in a highway driving scenario, the resolution is higher for small steering actions.
+\vspace{1em}
+\noindent
+table \ref{tab:actions} shows the discrete actions for the driver and the agent. The discrete values have been chosen empirically. More actions allow for more precise control. However, the number of actions is the branching factor for the search tree construction during planning. Thus, it has a strong impact on the complexity of the search problem. Therefore, a compromise between precision and performance is made. Because minor actions are more likely and generally preferable in a highway driving scenario, the resolution is higher for small steering actions.
+
+If the driver is distracted while the car is in a road bend, in the most extreme situation, she could potentially steer into the opposite direction of where she needs to steer to keep the car centered in its lane. In this case, to correct the driver's incorrect action, the agent needs to be able to effectively reverse the driver's action. Therefore, the action space of the agent is extended by plus two and minus two.
 
 \input{sections/tables/actions.tex}
 
-If the driver is distracted while the car is in a road bend, in the most extreme situation, she could potentially steer into the opposite direction of where she needs to steer in oder to keep the car centered in its lane. In this case, to correct the driver's incorrect action, the agent needs to be able to effectively reverse the driver's action. Therefore, the action space of the agent is extended by plus two and minus two. The agent is evaluated in experiments with the full action set but also with a small subset of the full action set including only minor actions (reduced action space in Table \ref{tab:actions}). The motivation behind this is the assumption that strong steering actions are seldomly needed while driving on a highway and leaving them away might reduce the planning complexity.
-
 \label{sec:driver_act_discr}
-The actions of the driver are discretized by mapping their continuous values to the closest vaue in the discrete action space as it can be seen in Table \ref{tab:action_dist}
+\noindent
+The actions of the driver are naturally continuous. We discretize them by mapping their continuous values to the closest value in the discrete action space, as it can be seen in table \ref{tab:action_dist}.
 
 \input{sections/tables/action_discretization.tex}
 
@@ -118,7 +129,7 @@ The reward function $R$ is based on the car's distance to the center of the lane
 
 The reward function defines the goal of the agent. For the task of lane centering, two sub-goals need to be considered: First, the car is supposed to stay as close to the lane center as possible. Second, the car's yaw angle (the direction into which the car is headed) should be as close to the track axis angle as possible. 
 
-Equation \ref{eq:reward} shows the reward function for the agent that incorporates both targets. The relative yaw angle is denoted as $\theta$, and $\phi$ represents the lane cen0teredness (see figure \ref{fig:observations}). A lane centerednss of zero means the car is centered. If the car is on the left most side of the lane, the value equals one, for the right most side it equals minus one. The agent receives the maximum reward if the car is in the middle of the road, while its relative yaw angle is equal to zero. Similar reward formulations have been used successfully before (\cite{reward1}; \cite{reward2}). The attentiveness of the driver is not directly included in the reward function. However, it is implicitly considered. If the agent performs an action that leads to a suboptimal combined steering action, it is penalized by receiving a lower reward. Thereby, if the agent acts when the attentive driver behaves optimally, it is punished indirecly.
+Equation \ref{eq:reward} shows the reward function for the agent that incorporates both targets. The relative yaw angle is denoted as $\theta$, and $\phi$ represents the lane centeredness (see figure \ref{fig:observations}). A lane centeredness of zero means the car is centered. If the car is on the left-most side of the lane, the value equals one. For the right-most side, it equals minus one. The agent receives the maximum reward if the car is in the middle of the road, while its relative yaw angle is equal to zero. Similar reward formulations have been used successfully before (\cite{reward1}; \cite{reward2}). The attentiveness of the driver is not directly included in the reward function. However, it is implicitly considered. If the agent performs an action that leads to a suboptimal combined steering action, it is penalized by receiving a lower reward. Thereby, if the agent acts when the attentive driver behaves optimally, it is punished indirectly.
 
 \begin{equation}
     \label{eq:reward}
@@ -129,20 +140,16 @@ Equation \ref{eq:reward} shows the reward function for the agent that incorporat
     \end{cases}
 \end{equation}
 
-\subsection{Observations}
+\subsection{Observations and observation probabilities}
+\label{sec:observations}
+
+% TODO: List of observations
+
+\input{sections/tables/observations.tex}
 
 The observation space $O$ includes all possible observations. The agent observes sensory information about the car's current distance to the road and relative yaw angle (see \ref{sec:observations}). Moreover, the driver's last action is observed. At any time step, the agent only receives the action of the driver for the last time step. Thereby, part of the planning process can be performed during policy execution (see section \ref{sec:driver_model}).
 
-\label{sec:observations}
-
-In a POMDP, the agent has only partial information about the true state of the environment. The information the agent has stems from observations it makes by interacting with the environment. For the shared control lane keeping task, the agent is given an observation after every steering action (after every 0.1 seconds of simulated time). It observes the current horizontal position of the car (lane centeredness), the car's relative yaw angle with respect to the track axis, and the driver's action from the last time step. The driver's current steering action is not observable. The agent has to estimate the most likely next action of the driver by considering the history of past observations. 
-
-\begin{figure}[htbp]
-    \includegraphics[width=0.6\linewidth]{figures/angle_distance.pdf}
-    \centering
-    \caption{Illustration of lane centeredness and yaw angle values}
-    \label{fig:observations}
-\end{figure}
+In a POMDP, the agent has only partial information about the true state of the environment. The information the agent has stems from observations it makes by interacting with the environment. For the shared control lane-keeping task, the agent is given an observation after every steering action (after every 0.1 seconds of simulated time). It observes the current horizontal position of the car (lane centeredness), the car's relative yaw angle with respect to the track axis, and the driver's action from the last time step. The driver's current steering action is not observable. The agent has to estimate the most likely next action of the driver by considering the history of past observations. 
 
 The observations are discrete. The lane centeredness is originally in a continuous interval of $(-\infty,\infty)$, with values in between -1 (right lane border) and +1 (left lane border) denoting that the car is within its lane, and everyting beyond standing for an off-track position (see figure \ref{fig:observations}). 99 discrete values represent evenly spaced segments between -1 and +1, and two additional values stand for left off lane and right off lane positions. The angle is transformed from an interval of $[-\pi, +\pi]$ radians to 101 discrete values representing evenly spaced segments. The driver's action is discretized as stated in the last section.
 
@@ -218,7 +225,7 @@ Particle injection is used to increase the variance of the belief about the driv
 \subsection{Preferred actions}
 \label{sec:preferred_actions}
 
-Preferred actions are a way to pass domain knowledge to the agent. In the case of the lane keeping scenario on a highway, one thing to consider is that strong steering actions are seldomly needed. Strong actions should only be needed as countermeasure when a distracted driver turns strongly into the wrong direction. However, they are needed in these situations, however scarce they are. The idea is to make minor actions more likely to be chosen during rollouts and give them an initial value. Thereby, preferred actions are selected and tried out first by the UCB1 algorithm. If they lead to good results, the agent can exploit on them quicker, if not, the agent will also evaluate less preferred actions. The initial value for all actions is set to  $ v_{init}(a) = 0.9 + 0.1 * Pr(a)$. The action selection probabilities during the rollout phase and the action's initial values are shown in Table \ref{tab:pref_actions}. The initial count is set to zero for all actions.
+Preferred actions are a way to pass domain knowledge to the agent. In the case of the lane keeping scenario on a highway, one thing to consider is that strong steering actions are seldomly needed. Strong actions should only be needed as countermeasure when a distracted driver turns strongly into the wrong direction. However, they are needed in these situations, however scarce they are. The idea is to make minor actions more likely to be chosen during rollouts and give them an initial value. Thereby, preferred actions are selected and tried out first by the UCB1 algorithm. If they lead to good results, the agent can exploit on them quicker, if not, the agent will also evaluate less preferred actions. The initial value for all actions is set to  $ v_{init}(a) = 0.9 + 0.1 * Pr(a)$. The action selection probabilities during the rollout phase and the action's initial values are shown in table \ref{tab:pref_actions}. The initial count is set to zero for all actions.
 
 \input{sections/tables/pref_action_prob.tex}
 

@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\footnotesize
+\begin{tabularx}{\textwidth}{p{0.20\textwidth}X}
+\toprule
+\textbf{Observation}& \textbf{Description and values}   \\ \midrule
+Relative yaw angle          &  Angle between car direction and track axis direction. The continuous values between $-\pi$ and $\pi$ radians are discretized using 101 bins: \newline \newline  
+Values:~\{~$-\pi$,~$-\nicefrac{49}{50}\pi$,~$\dots$,~$0$,~$\dots$,~$-\nicefrac{49}{50}\pi$,~$\pi$~\} \\ \midrule
+
+Lane centeredness &  Horizontal distance between the car and the lane center. $0$ when the car is centered in its lane, $+1$ if the car is on the left edge of the lane, and $-1$ if the car is on the right edge of the lane. Greater numbers than $+1$ or smaller numbers than $-1$ indicate that the car is off-lane. The continuous values between $-\infty$ and $\infty$ are discretized using 103 bins: \newline \newline  
+Values:~\{~right~off-lane,~-1,~-\nicefrac{49}{50},~$\dots$,~0,~\nicefrac{49}{50},~left~off-lane~\}\\ \midrule
+
+Driver steering \newline (last time step) & The agent perceives the last input of the human. This is the action of the human at the last time step. The agent does not know which action the human is going to choose simultaneously to its own action. $-1$ means full right, and $+1$ means full left. The values are discrete. \newline \newline  
+Values: See table \ref{tab:actions}. 
+% Values:~\{~$-1$,~$-0.75$,~$-0.5$,~$-0.25$,~$-0.15$,~$-0.1$,~$0$,~$0.1$,~$0.15$,~$0.25$,~$0.5$,~$0.75$,~$1$~\}
+\\ \bottomrule
+\end{tabularx}
+\caption[Observations for the agent]{Observations for the agent. \emph{See figure \ref{fig:observations} for an illustration of the yaw angle and the lane centeredness.}}
+\label{tab:observations}
+\end{table}

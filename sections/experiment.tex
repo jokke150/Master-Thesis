@@ -5,6 +5,16 @@
 
 % TODO: Clear message: What do we want to find out?
 
+% TODO: Move to experiment stup
+
+% Since the problem is a lane-keeping task, any state representing a lane departure is considered a \emph{terminal state}, resulting in the end of an experiment. The car is considered to have departed from its lane if the center of car lies more than 20cm beyond side lane markings.
+
+% The state is updated by the simulation engine every 0.002 seconds of simulated time (this is the driving time that is simulated, not real time). By default, robots provide new control actions to the car every 0.02 seconds. However, for the experiments in this thesis, a rate of 0.1 seconds is chosen. This makes the ride less smooth but reduces the frequency in which the agent has to plan ahead, reducing the amount of planning time. The steering action is repeated until a new one is provided.
+
+% The driver model is initially set to an attentive state. 
+
+% Every 0.1 seconds, an action is chosen depending on the driver's current state. Afterwards, the remaining duration is decremented by 0.1.
+
 
 In this chapter, the experimens that are performed are introduced. First, an overview of the different evaluated scenarios is given in section \ref{sec:scenarios}. Subsequently, in section \ref{sec:design_decisions} some important experiment design decisions are explained and justified. Furthermore, the process of tuning the hyperparameters is discussed in section \ref{sec:exp_hyperparams}. Lastly, the performance metrics for the evaluation are presented in section \ref{sec:perf_metrics}.
 
@@ -18,7 +28,7 @@ In this chapter, the experimens that are performed are introduced. First, an ove
 
 Three different agent configurations are evaluated, with differing action selection procedures. Moreover, there are three driver models with increasing complexity. In the experiments, each agent is tested with each of the driver models. The aim is to find out how well the different agents can handle the increasing complexity of the driver models.
 
-The three agents that are considered are not fundamentally different. They all use the POMCP algorithm. The difference lies in the way they select actions. The first agent utilizes the full action space. During rollouts, it chooses actions uniformly random. The second agent only considers a subset of the action space containing only minor steering actions (see Table \ref{tab:actions}). For both the first and the second agent, the actions are given an initial value of zero. The third agent uses preferred actions (see section \ref{sec:preferred_actions}). It considers the full action space but assigns different probabilities to the actions for their selection during rollouts, preferring minor steering actions over strong ones. Furthermore, it assigns initial values to the action nodes (see Table \ref{tab:pref_actions}).
+The three agents that are considered are not fundamentally different. They all use the POMCP algorithm. The difference lies in the way they select actions. The first agent utilizes the full action space. During rollouts, it chooses actions uniformly random. The second agent only considers a subset of the action space containing only minor steering actions (see table \ref{tab:actions}). For both the first and the second agent, the actions are given an initial value of zero. The third agent uses preferred actions (see section \ref{sec:preferred_actions}). It considers the full action space but assigns different probabilities to the actions for their selection during rollouts, preferring minor steering actions over strong ones. Furthermore, it assigns initial values to the action nodes (see table \ref{tab:pref_actions}).
 
 The driver model configurations are introduced in section \ref{sec:driver_model}. The basic driver model acts optimally when the driver is attentive and, when distracted, the last action which was performed while the driver was still attentive is repeated. The second model adds complexity by introducing a random amount of steering overcorrection when a formerly distracted driver regains her attentiveness. The intuition is that  a driver who suddenly realizes that she has deviated from the lane center is startled and thus steers too strongly to correct the car's position. The third driver model is based on the second one and adds a random amount of action noise on top. This noise is meant to make the driver's behavior more realistic and less predictable.
 
@@ -43,7 +53,7 @@ Every experiment consists of 100 repetitions (runs) of episodes consisting of 10
 
 \input{sections/tables/num_searches.tex}
 
-Table \ref{tab:num_searches} shows the 13 values that are used in the experiments for the number of searches during planning. The computational complexity of the planning process grows exponentially with the number of searches. Therefore, it was decided to increase the relative distance between the values as the values increase. This prevent a precise determination of the convergence point. To further narrow down the convergence point, additional experiments would be required. In practice, a maximum planning time is often defined after which planning ends, no matter how many searches have been performed \parencite{pomcp}. This is not the case for the experiments in this thesis.
+table \ref{tab:num_searches} shows the 13 values that are used in the experiments for the number of searches during planning. The computational complexity of the planning process grows exponentially with the number of searches. Therefore, it was decided to increase the relative distance between the values as the values increase. This prevent a precise determination of the convergence point. To further narrow down the convergence point, additional experiments would be required. In practice, a maximum planning time is often defined after which planning ends, no matter how many searches have been performed \parencite{pomcp}. This is not the case for the experiments in this thesis.
 
 \subsection{Initial belief}
 

@@ -1,0 +1,15 @@
+\begin{table}[htbp]
+\footnotesize
+\centering
+\centerfloat
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+\textbf{Long. position} & \textbf{Lat. position} &  \textbf{Yaw angle} & \textbf{Velocity}    & \textbf{Acceleration} \\ \midrule
+115m (from start)              & 0 (lane center) & 45\textdegree           & 80 km/h (fixed)      & 0.3                   \\ \bottomrule 
+\multicolumn{1}{l}{}           & \multicolumn{1}{l}{}      & \multicolumn{1}{l}{} & \multicolumn{1}{l}{}  \\ \toprule
+\textbf{Transmission}          & \textbf{Engine}           & \textbf{Wheels}      & \textbf{Aerodynamics} & \textbf{...} \\ \midrule
+gear, clutch, ...              & rpm, pressure, ...        & friction, spin, ...  & drag, lift, ...    & ...   \\ \bottomrule                                                                
+\end{tabular}
+\caption[Examplary car state]{Examplary car state. This is an incomplete table, only listing the most important attributes. For a full state representation, look up the \emph{tCar} struct in the \href{https://sourceforge.net/projects/torcs/files/api-docs/}{TORCS API documentation}.}
+\label{tab:state}
+\end{table}
