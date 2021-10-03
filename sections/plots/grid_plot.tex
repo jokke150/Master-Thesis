@@ -24,7 +24,6 @@
             legend style={font=\footnotesize},
             xticklabel style={font=\footnotesize},
             yticklabel style={font=\footnotesize},
-            nodes near coords={\ifdim \Cvalue pt = 587.674 pt {\textbf{\pgfmathprintnumber[assume math mode=true, precision=0]\Cvalue}} \else {\pgfmathprintnumber[assume math mode=true, precision=0]\Cvalue} \fi},
             visualization depends on={\thisrow{C} \as \Cvalue},
             nodes near coords style={anchor=center, font=\footnotesize}
         ]
@@ -34,7 +33,15 @@
                 mesh/cols=3,
                 point meta=explicit,
                 draw=gray,
-                colormap={whitemyblue}{color(0)=(white), color(500)=(myblue!30), color(587)=(myblue)}
+                colormap={whitemyblue}{color(0)=(white), color(500)=(myblue!30), color(587)=(myblue)},
+                nodes near coords={
+                    \ifdim \Cvalue pt = 587.674 pt {
+                        \fbox{\textbf{\pgfmathprintnumber[assume math mode=true, precision=0]\Cvalue}}
+                    } \else {
+                        \pgfmathprintnumber[assume math mode=true, precision=0]\Cvalue
+                    } 
+                    \fi
+                }
             ] table [meta=C] {
                 x y C
                 0 0 356.159
@@ -68,6 +75,14 @@
                 point meta=explicit,
                 draw=gray,
                 colormap={whitegreen}{color(0)=(white), color(400)=(myred!40), color(550)=(myred!50), color(646)=(myred)},
+                nodes near coords={
+                    \ifdim \Cvalue pt = 646.833 pt {
+                        \fbox{\textbf{\pgfmathprintnumber[assume math mode=true, precision=0]\Cvalue}}
+                    } \else {
+                        \pgfmathprintnumber[assume math mode=true, precision=0]\Cvalue
+                    } 
+                    \fi
+                }
             ] table [meta=C] {
                 x y C
                 0 0 37.504
@@ -100,7 +115,15 @@
                 mesh/cols=3,
                 point meta=explicit,
                 draw=gray,
-                colormap={whitegreen}{color(0)=(white), color(600)=(mygreen!40), color(942)=(mygreen)}
+                colormap={whitegreen}{color(0)=(white), color(600)=(mygreen!40), color(942)=(mygreen)},
+                nodes near coords={
+                    \ifdim \Cvalue pt = 942.054 pt {
+                        \fbox{\textbf{\pgfmathprintnumber[assume math mode=true, precision=0]\Cvalue}}
+                    } \else {
+                        \pgfmathprintnumber[assume math mode=true, precision=0]\Cvalue
+                    } 
+                    \fi
+                }
             ] table [meta=C] {
                 x y C
                 0 0 572.054
@@ -129,5 +152,5 @@
             };
         \end{groupplot}
     \end{tikzpicture}
-    \caption[Average cumulative rewards for combinations of search horizon and exploration constant]{Average cumulative rewards for combinations of search horizon and exploration constant for all three action configurations (20 runs with up to 1000 actions each and 1000 searches per planning step; driver model with steering overcorrection but without noise).}
+    \caption[Average cumulative rewards for combinations of search horizon and exploration constant]{Average cumulative rewards for combinations of search horizon and exploration constant for all three action configurations (20 runs with up to 1000 actions each and 1000 searches per planning step; driver model with steering overcorrection but without noise). The framed values indicate the combination with the best result that we use for further experiments.}
 \end{figure}

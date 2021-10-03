@@ -4,7 +4,6 @@
     \begin{axis}[
         width=0.8\linewidth,
         height=6cm,
-        % title={Simple driver model},
         mark size=1pt,
         xlabel={Number of searches},
         xtick={10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
@@ -23,7 +22,23 @@
         xticklabel style={font=\footnotesize},
         yticklabel style={font=\footnotesize},
         error bars/y dir=both,
-        error bars/y explicit
+        error bars/y explicit,
+        % title={Average planning time},
+        % title style={font=\footnotesize, yshift=15pt},
+        % extra x ticks={10, 100, 200, 300, 400, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000},
+        % extra x tick style={
+        %     grid=none,
+        %     tick label style={
+        %         rotate=0,
+        %         anchor=east,
+        %         yshift={20pt},
+        %         xshift={10pt},
+        %         yshift={(\ticknum==0)*4pt}
+        %     },
+        %     tick pos = right,
+        %     ticklabel pos = right,
+        % },
+        % extra x tick labels={0.004, 0.05, 0.08, 0.12, 0.15, 0.19, 0.27, 0.36, 0.55, 0.92, 1.83, 2.93, 3.75}
     ]
     \addplot [solid, color=myblue, mark=square] table [x=Simulations, y=Average Reward, y error=Standard Error, col sep=comma]{data/Simulations/Simulations - 50 runs - 1000 actions - discount horizon 5 - exp const 0.75 mean.csv};
     \addplot [solid, color=purple, mark=square] table [x=Simulations, y=Average Reward, y error=Standard Error, col sep=comma]{data/Simulations/Reduced Actions - 50 runs - 1000 actions - discount horizon 5 mean.csv};
