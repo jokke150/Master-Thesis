@@ -5,9 +5,9 @@
 
 % TODO: Clear message: What do we want to find out?
 
-In this chapter, our experiments are introduced. First, an overview of the different evaluated scenarios is given in section \ref{sec:scenarios}. Subsequently, in section \ref{sec:design_decisions} some important experiment design decisions are explained and justified. Furthermore, the process of tuning the hyperparameters is discussed in section \ref{sec:exp_hyperparams}. Lastly, the performance metrics for the evaluation are presented in section \ref{sec:perf_metrics}.
+In this chapter, our experiments are introduced. First, an overview of the different evaluated scenarios is given in section \ref{sec:scenarios}. Subsequently, in section \ref{sec:design_decisions} some important experiment design decisions are explained and justified. Furthermore, the process of tuning the hyperparameters is discussed in section \ref{sec:exp_hyperparams}. Lastly, the performance metrics for the evaluation are presented in section~\ref{sec:perf_metrics}.
 
-\emph{All experiments have been performed single threaded, but in parallel, on a Google Cloud C2 Compute-optimized\footnote{See \href{https://cloud.google.com/compute/docs/machine-types}{Google Cloud machine families}} virtual machine with 60 cores and 240 GB RAM, running Ubuntu 20.04 LTS.}
+\emph{All experiments have been performed single threaded, but in parallel, on a Google Cloud C2 Compute-optimized\footnote{See \href{https://cloud.google.com/compute/docs/machine-types}{Google Cloud machine families}} virtual machine with 60 CPU cores and 240 GB RAM, running Ubuntu 20.04 LTS.}
 
 
 % TODO: Add recap of general highway lane keeping scenario?
@@ -44,7 +44,7 @@ It is important to consider that the simulation is not executed in real-time. Th
 
 \input{sections/tables/num_searches.tex} 
 
-We restrict how many searches are performed in each planning step. In the experiments, we evaluate different numbers of searches to assess the performance impact. We expect the performance to converge after some amount of searches and want to find out when this convergence occurs. Table \ref{tab:num_searches} shows the various values that are used in the experiments. The computational complexity of the planning process grows exponentially with the number of searches. Therefore, it was decided to increase the relative distance between the values we try as the values increase. This prevents a precise determination of the convergence point. However, otherwise, the experiments would not be computationally feasible with our resources. To further narrow down the convergence point, additional experiments would be required.
+We restrict how many searches are performed in each planning step. In the experiments, we evaluate different numbers of searches to assess the performance impact. We expect the performance to converge after some amount of searches and want to find out when this convergence occurs. Table \ref{tab:num_searches} shows the various values that are used in the experiments. The computational complexity of the planning process grows relative to the number of searches. Therefore, it was decided to increase the relative distance between the values we try as the values increase. This prevents a precise determination of the convergence point. However, otherwise, the experiments would not be computationally feasible with our resources. To further narrow down the convergence point, additional experiments would be required.
 
 \subsection{Initial belief}
 

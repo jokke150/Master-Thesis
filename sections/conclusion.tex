@@ -11,7 +11,7 @@ This chapter concludes the study of this thesis about a distraction-aware lane-k
 
 % Has it been successful?
 
-In this thesis, an agent acting as a lane-keeping assistance system is conceived that estimates the driver's distraction online, sharing control over the car with the driver. The agent does not observe whether the driver is attentive or distracted. For its assessment of the driver's distraction, the agent relies solely on observations about driver performance measures, such as the steering actions of the driver, and the position of the car. The problem is modeled as a POMDP to account for the uncertainty about the driver's distraction and the exact positon of the car. The POMCP algorithm is applied to solve the POMDP online. To the best of our knowledge, this is the first work that applies online POMDP solving to address the uncertainty about the driver's distraction in a shared control lane keeping scenario, while relying only on commonly available driver performance measures as observations.
+In this thesis, an agent acting as a lane-keeping assistance system is conceived that estimates the driver's distraction online, sharing control over the car with the driver. The agent does not observe whether the driver is attentive or distracted. For its assessment of the driver's distraction, the agent relies solely on observations about driver performance measures, such as the steering actions of the driver, and the position of the car. The problem is modeled as a POMDP to account for the uncertainty about the driver's distraction and the exact positon of the car. The POMCP algorithm is applied to solve the POMDP online. To the best of our knowledge, this is the first work that applies online POMDP solving to address the uncertainty about the driver's distraction in a shared control lane-keeping scenario, while relying only on commonly available driver performance measures as observations.
 
 \vspace{1em}
 \noindent
@@ -47,10 +47,10 @@ The main conclusions of this thesis can be summarized as follows:
 % Additional clues about the driver's attentiveness are needed. 
 
 \section{Road toward application with human drivers}
+\label{sec:future}
 
 In this section, adaptations and improvements that we suggest for the application of our approach with a more complex driver model or a human driver are discussed. 
 
-\label{sec:future}
 \subsection{Avoiding particle deprivation}
 
 The main problem encountered during planning is particle deprivation. This happens when the belief of the agent diverges substantially from the true state. In our case, this is mostly caused in the forward search performed during the planning process by taking into account either too few possible future trajectories, or not successfully identifying and focusing on more probable ones. Taking into account too few possibilities can be circumvented by increasing the exploration. However, this has a negative performance impact. A more promising solution wuld be to improve the performance of the generative model we use for the forward simualtion during the planning phase. The next section addresses this issue. Enabling the agent to focus on more prbable scenarios can be achieved in two ways: First, one can pass domain knowledge to the agent, like we did by using preferred actions. Second, offering the agent more sohisticated observations could lead to a more accurate belief state.
