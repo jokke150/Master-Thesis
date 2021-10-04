@@ -1,27 +1,20 @@
 \chapter{Experimental setup}
 \label{ch:setup}
 
-% Accelleration, braking, and gear changes are performed by a simple controller intended to keep the speed constant at at all times. 
-
-% TODO: Clear message: What do we want to find out?
-
 In this chapter, our experiments are introduced. First, an overview of the different evaluated scenarios is given in section \ref{sec:scenarios}. Subsequently, in section \ref{sec:design_decisions} some important experiment design decisions are explained and justified. Furthermore, the process of tuning the hyperparameters is discussed in section \ref{sec:exp_hyperparams}. Lastly, the performance metrics for the evaluation are presented in section~\ref{sec:perf_metrics}.
 
-\emph{All experiments have been performed single threaded, but in parallel, on a Google Cloud C2 Compute-optimized\footnote{See \href{https://cloud.google.com/compute/docs/machine-types}{Google Cloud machine families}} virtual machine with 60 CPU cores and 240 GB RAM, running Ubuntu 20.04 LTS.}
-
-
-% TODO: Add recap of general highway lane keeping scenario?
+\emph{All experiments have been performed single-threaded, but in parallel, on a Google Cloud C2 Compute-optimized\footnote{See \href{https://cloud.google.com/compute/docs/machine-types}{Google Cloud machine families}} virtual machine with 60 CPU cores and 240 GB RAM, running Ubuntu 20.04 LTS.}
 
 \section{Evaluated scenarios}
 \label{sec:scenarios}
 
 Three different agent configurations are evaluated, with differing action selection procedures. Moreover, there are three driver models with increasing complexity. In the experiments, each agent is tested with each of the driver models. The aim is to find out how well the different agents can handle the increasing complexity of the driver models.
 
-The three agents that are considered all use the POMCP algorithm. The difference lies in the way they select actions. The first agent utilizes the full action space. During rollouts, it chooses actions uniformly random. The second agent only considers a subset of the action space containing only minor steering actions (see table \ref{tab:actions}). This is done because we do not expect strong steering actions to be needed often. For both the first and the second agent, the actions are given an initial value of zero. The third agent uses preferred actions (see section \ref{sec:preferred_actions}). It considers the full action space but assigns different probabilities to the actions for their selection during rollouts, preferring minor steering actions over strong ones. Furthermore, it assigns initial values to the action nodes (see table \ref{tab:pref_actions}).
+The three agents that are considered all use the POMCP algorithm. The difference lies in the way they select actions. The first agent utilizes the full action space. During rollouts, it chooses actions uniformly randomly. The second agent only considers a subset of the action space containing only minor steering actions (see table \ref{tab:actions}). This is done because we do not expect strong steering actions to be needed often. For both the first and the second agent, the actions are given an initial value of zero. The third agent uses preferred actions (see section \ref{sec:preferred_actions}). It considers the full action space but assigns different probabilities to the actions for their selection during rollouts, preferring minor steering actions over strong ones. Furthermore, it assigns initial values to the action nodes (see table \ref{tab:pref_actions}).
 
 The driver model configurations are introduced in section \ref{sec:driver_model}. The basic driver model acts optimally when the driver is attentive and, when distracted, the last action which was performed while the driver was still attentive is repeated. The second model adds complexity by introducing a random amount of steering overcorrection when a formerly distracted driver regains her attentiveness. The intuition is that a driver who suddenly realizes that she has deviated from the lane center is startled and thus steers too strongly to correct the car's position. The third driver model is based on the second one and adds a random amount of action noise on top. This noise is meant to make the driver's behavior more realistic and less predictable.
 
-In total, this makes nine scenarios (three agents $\times$ three driver models). For each of these scenarios, various experiments are executed with varying number of forward searches during planning with the POMCP algorithm (see section \ref{sec:pomcp}). The rationale behind this is to determine after how many searches the agents' performance converges. The number of searches has a substantial impact on the planning time the agent needs before deciding on its next action. The fewer searches are needed for a good policy, the better, as this translates to a lower planning time.
+In total, this makes nine scenarios (three agents $\times$ three driver models). For each of these scenarios, various experiments are executed with varying numbers of forward searches during planning with the POMCP algorithm (see section \ref{sec:pomcp}). The rationale behind this is to determine after how many searches the agents' performance converges. The number of searches has a substantial impact on the planning time the agent needs before deciding on its next action. The fewer searches are needed for a good policy, the better, as this translates to a lower planning time.
 
 \section{Experiment design decisions}
 \label{sec:design_decisions}
@@ -29,16 +22,11 @@ We made a number of noteworthy experiment design decisions that are important to
 
 \subsection{Episode definition and repetitions}
 
-%TODO: Mention that we choose a challenging task. Usually distracted drivers don't get off the road within seconds ^^
-
-% Most IVIS tasks increased the lateral deviations, but in the majority of cases the drivers were still able to stay in their lane.
-% Driver distraction based lane-keeping assistance - C. Blaschke 
-
 Every experiment consists of 50 repetitions (runs) of episodes consisting of 1000 actions each, if no terminal state is reached earlier. An episode can end prematurely if a terminal state is reached. A state is terminal if the car is off track, which is considered to be the case if the center of the car lies within more than 20 cm beside the left or right lane markings. The episodes are independent of each other - no data is persisted. Each episode starts with the same car state (centered in the lane, relative yaw angle of zero) and the same driver model state (attentive, same duration until distracted). The acceleration and braking are controlled by an external controller, keeping the speed constant at 80 km/h during the entire episode.
 
 \subsection{Experiments do not use real-time simulation}
 
-It is important to consider that the simulation is not executed in real-time. The agent and driver provide a new steering action every 0.1 seconds. For the time in between, their steering action stays constant. 1000 actions represent 100 seconds of simulated driving time. This means that the car drives 100 seconds in TORCS. However, because the planning time before each action may be substantial, the experiment execution can take much longer in real-time. While the agent plans, the simulation \emph{waits}; it is paused until the agent decides on its next action and executes it. This is not realistic and would not work with a real human and a real car. Section \ref{sec:perf_opt} discusses how performance optimizations could be implemented in order to circumvent this problem. 
+It is important to consider that the simulation is not executed in real-time. The agent and driver provide a new steering action every 0.1 seconds. For the time in between, their steering action stays constant. 1,000 actions represent 100 seconds of simulated driving time. This means that the car drives 100 seconds in TORCS. However, because the planning time before each action may be substantial, the experiment execution can take much longer in real-time. While the agent plans, the simulation \emph{waits}; it is paused until the agent decides on its next action and executes it. This is not realistic and would not work with a real human and a real car. Section \ref{sec:perf_opt} discusses how performance optimizations could be implemented in order to circumvent this problem. 
 
 \subsection{Choice of evaluated number of searches}
 
@@ -67,13 +55,11 @@ Every run has a different seed for the random number generator used for the rand
 \section{Hyperparameter optimization}
 \label{sec:exp_hyperparams}
 
-Besides the number of searches, there are two additional hyperparameters of POMCP that have a strong influence on the planning performance: The search horizon and the exploration constant. The exploration constant is used to enhance the value of rarely-tried actions in order to facilitate exploration and stop the agent from overfitting. The search horizon (or discount horizon) describes how many actions the agent looks into the future during planning, if no terminal state is reached earlier.
+Besides the number of searches, there are two additional hyperparameters of POMCP that have a strong influence on the planning performance: The search horizon and the exploration constant. The exploration constant is used to enhance the value of rarely-tried actions in order to facilitate exploration and stop the agent from overfitting. The search horizon (or discount horizon) describes how many actions the agent looks into the future during planning if no terminal state is reached earlier.
 
 Six different exploration constants and three different search horizons are evaluated in a grid search for the best combination. Each combination is assessed by the average cumulative return from an experiment with 20 runs, up to 1000 actions each, and 1000 searches per planning step. The second driver model is used for the grid search (steering overcorrection, no action noise; see section \ref{sec:driver_model_config}). The grid search is only performed for this selected scenario because of limited computing and time resources. However, the experiments should be sufficient to indicate the performance differences stemming from the hyperparameter combinations.
 
 \section{Performance metrics}
 \label{sec:perf_metrics}
 
-The performance of the agents is measured in two ways: First, there is the cumulative reward an agent receives in an experiment for a particular scenario. Second, the terminal states an agent encounters during the experiment are considered. Terminal states entail that the lane-keeping task was failed. It is to be expected that all agents will lead to similar cumulative rewards with an increasing number of searches during planning. The key is the number of searches they require in order to achieve this reward. A lower number of searches means more efficient, faster planning. Furthermore, the optimality of the agents' policies when converged will be evaluated by comparing the agents' performances with two baselines. First, as the lower bound, the driver model driving without assistance. Second, as the upper bound, an agent with perfect knowledge of the state who always acts optimally.
-
-% TODO: Incude Lane centeredness comparison?
+The performance of the agents is measured in two ways: First, there is the cumulative reward an agent receives in an experiment for a particular scenario. Second, the terminal states an agent encounters during the experiment are considered. Terminal states entail that the lane-keeping task was failed. It is to be expected that all agents will lead to similar cumulative rewards with an increasing number of searches during planning. The key is the number of searches they require in order to achieve this reward. A lower number of searches means more efficient, faster planning. Furthermore, the optimality of the agents' policies when converged will be evaluated by comparing the agents' performances with two baselines. First, as the lower bound, the driver model driving without assistance. Second, as the upper bound, an agent with perfect knowledge of the state, who always acts optimally.

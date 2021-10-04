@@ -21,16 +21,12 @@ A combination of a relatively low exploration constant and a shallow search hori
 For the agent using preferred actions, The best results are achieved with a deep search horizon and a low exploration constant. The agent plans ahead 25 actions into the future, with a relatively low exploration. The increased search horizon has the effect that the planning complexity, and thereby the planning time, is significantly greater than for the other two agents. It is very important to take this into account. The potential applicability to driving with a real human is highly dependent on the planning time.
 
 \subsection{Performance impact of the number of searches during planning}
-% TODO: Provide concrete planning time
 
 All agents can lead to good policies if they perform a high number of searches. For the simple driver model, convergence occurs significantly earlier than with the less predictable driver models. All three agents perform quite similar. The agent using the full unweighted action space converges first but the other two agents reach slightly higher results later on. From 1500 searches onward, for the agents using the full action space, both weighted and unweighted, the terminal states reached during runs are caused by particle deprivation. The agent using the reduced action set encounters terminal states because it cannot counteract a distracted driver's wrong actions precisely because its action space is reduced.
 
 For the more complex driver model implementing steering overcorrection, using preferred actions leads to a substantially earlier convergence and to fewer terminal states. The performance of the agent using preferred actions converges somewhere around 1500 searches. From this point on, no terminal states are reached anymore. The other two agents still lead to terminal states during some runs for all evaluated number of searches. The return for episodes where no terminal state is reached is similar to the simple driver model experiments. The agents driving policies are therefore not worse. What is worse is their ability to estimate the current state of the driver. The terminal states result almost exclusively from particle deprivation after a formerly distracted driver becomes attentive again and overcorrects. This was expected since the complexity of the planning task increases with the introduction of oversteering. Only the agent using preferred actions is able to avoid particle deprivation.
 
 The experiments for the third driver model with steering overcorrection and additional driver action noise lead to similar results as the experiments without noise. The most likely reason for this is the discretization applied to the driver's actions (see section~\ref{sec:discretization}). Low noise that is added to an action is often lost during discretization. The resulting action can therefore be the same action as it would have been before adding the noise. However, there are cases where a combination of a strong overcorrection with a high driver action noise leads to unexpected situations and therefore particle deprivation, even for the agent with preferred actions.
-
-% TODO: Discuss performance impact of high number of searches explicitly
-% The planning time would be very useful for this!
 
 \paragraph{Main problem: Particle deprivation}
 
@@ -44,13 +40,8 @@ Using preferred actions lowers the chance of particle deprivation. Due to the us
 
 Intuitively, one would expect the agent with the reduced action set to lead to a similar improvement when it comes to particle deprivation as the agent using preferred actions. The reduced number of actions means that the fixed number of searches is distributed over fewer actions. Thereby, more potential driver models could be covered per action, which should reduce the chance of particle deprivation. However, during the experiments, the agent with the reduced action set did not lead to significantly lower terminal states reached due to particle deprivation than the agent using the full action set. A plausible explanation for this could be the large exploration constant for the agent with the reduced action set. The high value for the exploration constant leads to intensive exploration. Thereby it could counteract the effect of the reduced action space. An additional test with a smaller exploration constant would be necessary to verify this assumption.
 
-% TODO: Mention deep search horizon and potential effects
-% Does looking far into the future help further?
-
 \subsection{Mean lane centeredness}
 
-% TODO: Better explanation for variance of preferred actions agent
-% TODO: Comparison to baseline would be good to back up claims
 Increasing the number of searches during planning leads to better lane-centering for all agents. This was to be expected as the ability to estimate the driver's state correctly increases with the number of searches. With 10,000 searches, the car can mostly be kept between 0.5 and 1.0 meters from the lane center. The optimally-acting agent is able to consistently keep the distance to the lane center close to zero. In contrast, it is clear that none of the agents is able to estimate the driver's state accurately enough to keep the car centered at all times.
 
 It is difficult to compare this result with the lane-keeping performance achieved in other papers as the experiment setups differ widely. It is highly likely that commercially available systems today that do not account for the driver's distraction would outperform our approach significantly. This does not undermine our contribution, however, because the fundamental premise of assisting a potentially distracted driver by solving a POMDP model including only driver performance measures is proven to work. Nevertheless, improvements are necessary.
@@ -60,11 +51,7 @@ It is difficult to compare this result with the lane-keeping performance achieve
 
 There are multiple factors that limit the applicability of the solution approach taken in this thesis to a more realistic setting or even a real-world scenario. The most striking limitations of the solution approach are elaborated in the following subsections.
 
-% TODO: Constant speed!
-
 \subsection{Long planning time}
-
-% TODO: Here, I REALLY need concrete times.
 
 One of the most striking shortcomings of the online solution approach taken in this thesis is the long planning time the agents require for the search they perform during planning. Anything beyond a few fractions of a second would be too much in a real-world driving scenario. The agents that are analyzed in this thesis require many searches during planning in order to avoid particle deprivation. Only the agent using preferred action was able to consistently avoid terminal states for all driver models, and that only with 7,500 searches or more. The other agents may require even more forward searches. Especially for the agent with preferred actions, due to the deep search horizon, performing a large number of searches means having to plan for a long time. Performing 7,500 searches with a search horizon of 25 means the agent has to simulate a total of 187,500 actions, which takes about 16 to 17 seconds on average (see tables \ref{tab:simple_terminal}, \ref{tab:over_terminal}, and \ref{tab:noise_terminal}).
 
@@ -79,16 +66,8 @@ For the experiments conducted in this thesis, the same driving simulator and dri
 
 The action and observation space for the agents are discrete. POMCP is not suited to be used with continuous action and observation spaces (see section \ref{sec:discretization}). Steering actions and a car's sensory information are naturally continuous. The results indicate that a discretization of the observation space can be successful. However, the lower the number of discretization bins, the lower is the precision. On the one hand, increasing the resolution of the discretization can lead to a considerable elevation of the planning complexity. More distinct observations may be encountered while constructing the search tree. A low precision of the observations, on the other hand, does not allow the agent to act precisely, leading to suboptimal behavior. Limited steering precision is also caused by discretizing the action space. If the agent can only choose from a limited number of actions, it cannot steer accurately. Its assistance might be jumpy. This does not allow for a smooth driving experience. Section \ref{sec:conclusion-continuous} discusses briefly how this obstacle could be overcome. 
 
-% TODO: Add a potential explanation
 Furthermore, the actions of the driver are discretized as well. This reduces the driver's precision which is unacceptable in any realistic scenario. The state space is continuous. Therefore, theoretically, POMCP can work with continuous driver actions, as long as they are discretized for the observations. However, none of the agents is remotely successful if continuous driver actions are used. It becomes impossible to account for all potential driver actions while planning. A wide array of sampled actions would probably be enough to allow for a good estimation. However, a low discretization resolution for the observations leads to a large range of different driver actions that are represented by a single observation. Planning becomes too imprecise. Using a continuous observation space could, therefore, potentially enable the agent to plan with continuous driver actions as well. Further experiments are necessary to verify this assumption. Possible approaches to handle continuous actions are discussed in section \ref{sec:conclusion-continuous}.
 
 \subsection{Driver does not learn or adapt}
 
 Research suggests that drivers adapt their driving behavior when they are assisted by a lane-keeping assistant \parencite{behavior_adapt}. The driver model used in the experiments does not evolve over time. It does not adapt to the behavior of the agent. Even if the agent would steer in the wrong direction repeatedly, the driver model does not adapt to the agent by adjusting its behavior. The driver also does not develop any reliance on the agent - it does not reduce its steering efforts, trusting the agent to correct it, like it would be conceivable with real humans.
-
-% TODO: Add Observations are not noisy, which is unrealistic
-
-% TODO: Mention? Speaks for bad experiment design
-% \subsection{Edge cases}
-
-% Human-Robot Mutual Adaptation in Shared Autonomy

@@ -1,11 +1,7 @@
 \chapter{Methodology}
 \label{ch:problem}
 
-% TODO: The agent does not know about the driver's next action for performance reasons, so that part of the policy computation can be done during policy execution? This is nowhere explained in teh text but it gotta be explained
-
-
-% TODO: REVISE
-This chapter formally defines the POMDP used to model the shared-control lane-keeping task that is considered in this thesis. Furthermore, the chosen solution approach and how it was applied for the defined task are presented. Section \ref{sec:lane_keeping_loop} begins with an overview of the three components comprising the problem: The driver model representing the human driver, the driving simulator, and the agent assisting the driver. The simple driver model that we use to simulate human driving behavior is specified in section \ref{sec:driver_model}. Section \ref{torcs} describes how \glsentryfull{torcs} is used to simulate the dynamics of a car driving on a highway. The agent employs the \glsentryfull{pomcp} algorithm to solve the POMDP online. A detailed explanation of how the algorithm is applied is provided in section \ref{sec:pomcp}.
+This chapter formally defines the POMDP used to model the shared-control lane-keeping task that is considered in this thesis. Furthermore, the chosen solution approach and how it was applied for the defined task are presented. Section \ref{sec:lane_keeping_loop} begins with an overview of the three components comprising the problem: The driver model representing the human driver, the driving simulator, and the agent assisting the driver. The simple driver model that we use to simulate human driving behavior is specified in section \ref{sec:driver_model}. Section \ref{torcs} describes how \acrfull{torcs} is used to simulate the dynamics of a car driving on a highway. The agent employs the \acrfull{pomcp} algorithm to solve the POMDP online. A detailed explanation of how the algorithm is applied is provided in section \ref{sec:pomcp}.
 
 \section{Overview}
 
@@ -15,8 +11,6 @@ The problem addressed in this thesis is an assisted driving lane-keeping task, w
 % TODO: Add arc between Global state and driver's action model
 %%%%
 
-% TODO: Add state estimator + policy to agent? 
-% See (POMDP definition) Planning and acting in partially observable stochastic domains)
 \begin{figure}[htbp]
     \centerfloat
     \includegraphics[width=1.0\textwidth]{figures/Components.pdf}
@@ -29,11 +23,10 @@ Rather than experimenting with real humans and a real car, simulation models are
 \subsection{TORCS as a highway driving simulator}
 \label{torcs}
 
-\glsentryfull{torcs} is an open-source car driving simulator \parencite{torcs}. As the name suggests, TORCS was initially developed to simulate racing car tournaments. However, as racing cars are fundamentally also just cars and everything, including the tracks, is highly customizable, highway driving can be simulated just as well. Part of TORCS is a comprehensive and realistic discrete-time simulation engine to simulate car dynamics, as well as an \glsentryshort{api} for computer-controlled drivers, so-called robots. It has been widely used by researchers to simulate car driving and to evaluate the performance of autonomous driving agents (for example in \cite{torcs-3}, \cite{torcs-1}, \cite{torcs-2}, and \cite{reward1}).
+\acrfull{torcs} is an open-source car driving simulator \parencite{torcs}. As the name suggests, TORCS was initially developed to simulate racing car tournaments. However, as racing cars are fundamentally also just cars and everything, including the tracks, is highly customizable, highway driving can be simulated just as well. Part of TORCS is a comprehensive and realistic discrete-time simulation engine to simulate car dynamics, as well as an \glsentryshort{api} for computer-controlled drivers, so-called robots. It has been widely used by researchers to simulate car driving and to evaluate the performance of autonomous driving agents (for example in \cite{torcs-3}, \cite{torcs-1}, \cite{torcs-2}, and \cite{reward1}).
 
 We use TORCS as a simulator for car dynamics for two purposes. First, to simulate the dynamics of the car the agent and the driver share control over. This simulation is part of the environment of the agent. It represents the car in the real world and would be replaced by an actual car in a realistic setting. TORCS maintains the car's true state and updates it based on the combined steering action. Second, we use the simulation engine as a generative model (see section \ref{sec:gen_model}). The generative model is part of the agent, constituting the agent's model of the world. The agent uses it to sample state and observation transitions for the forward search performed during the online MCTS policy computation (planning).
  
-% TODO: Move to experiment setup?
 \begin{figure}[htbp]
     \centerfloat
     \includegraphics[width=1.0\textwidth]{figures/track.pdf}
@@ -47,8 +40,6 @@ Typical racing tracks for TORCS have sharp road bends and wide roads with differ
 \label{sec:driver_model}
 
 In this study, the driver is simulated using a stochastic driver model, instead of performing experiments with an actual human driver. The driver model determines when a driver is attentive or becomes distracted, for how long the attentive or distracted period persists, and what actions the driver takes. We design a simple driver model to evaluate our approach. If the agent can plan successfully with a simple driver model, this serves as an initial confirmation that the solution approach is promising. The focus of this thesis is not a realistic driver model.
-
-% TODO: Add driver model illustration
 
 \subsubsection{Configurations}
 \label{sec:driver_model_config}
@@ -158,7 +149,7 @@ The state transition probabilities $T$ and the Observation probabilities $Z$ are
 \subsection{Solving procedure of POMCP}
 \label{sec:pomcp}
 
-The key idea of \Glsentryfull{pomcp} is to use Monte Carlo sampling both to sample start states from the belief and to sample histories using a generative model \parencite{pomcp}. Thereby, the curse of dimensionality and the curse of history are \emph{broken} (see section \ref{sec:curses}). POMCP is an anytime, online solver. For an online solver, policy computation (planning) and execution (acting) are intertwined. An anytime algorithm builds the solution incrementally. It can be stopped at any time and there will be a solution, albeit the solution might not be very good if the algorithm is stopped early.
+The key idea of \acrfull{pomcp} is to use Monte Carlo sampling both to sample start states from the belief and to sample histories using a generative model \parencite{pomcp}. Thereby, the curse of dimensionality and the curse of history are \emph{broken} (see section \ref{sec:curses}). POMCP is an anytime, online solver. For an online solver, policy computation (planning) and execution (acting) are intertwined. An anytime algorithm builds the solution incrementally. It can be stopped at any time and there will be a solution, albeit the solution might not be very good if the algorithm is stopped early.
 
 \begin{figure}[htbp]
     \centering
@@ -177,13 +168,13 @@ The belief over the states is approximated by employing an unweighted particle f
 \begin{figure}[htbp]
     \centerfloat
     \includegraphics[width=1.0\textwidth]{figures/POMCP.pdf}
-    \caption{Flow chart illustrating the \glsentryfull{pomcp} algorithm}
+    \caption{Flow chart illustrating the \acrfull{pomcp} algorithm}
     \label{fig:pomcp}
 \end{figure}
 
 Figure \ref{fig:pomcp} illustrates the process of POMCP.  If the belief for the current history $h_{real}$ does not contain particles at the beginning of a planning episode ($B(h_{real}) = \emptyset$), the agent has lost track of the environment's state completely. If this happens, we consider the planner to have failed and select actions randomly from this point on. Otherwise, a start state for a search is sampled from the belief at the current history: $ s \sim B(h_ {real})$. 
 
-Searches are divided into two stages. During the first stage, which is active as long as child nodes exist for all children, actions are selected using the \glsentryfull{ucb1} algorithm \parencite{ucb1}. UCB1 chooses actions by the principle of optimism in the face of uncertainty; the values of actions are increased with an exploration bonus that is higher for rarely tried actions (see equation \ref{eq:ucb1}, $c$ is a constant hyperparameter). 
+Searches are divided into two stages. During the first stage, which is active as long as child nodes exist for all children, actions are selected using the \acrfull{ucb1} algorithm \parencite{ucb1}. UCB1 chooses actions by the principle of optimism in the face of uncertainty; the values of actions are increased with an exploration bonus that is higher for rarely tried actions (see equation \ref{eq:ucb1}, $c$ is a constant hyperparameter). 
 
 \begin{equation}
     V_{UCB1}(ha) = V(ha) + c\sqrt{\tfrac{log N(h)}{N(ha)}}

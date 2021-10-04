@@ -3,16 +3,8 @@
 
 This chapter presents the results from the experiments. First, in section \ref{sec:perf_bounds} the performance of the driver without assistance, and of an agent that acts optimally, are established as the lower and upper performance bounds respectively. In section \ref{sec:grid_search}, the results of the hyperparameter optimization are presented. Then, the influence of the number of searches during planning  on the performance is evaluated in section \ref{sec:convergence}, with the aim of identifying the point of convergence for each agent. The cumulative reward but also the terminal states reached during experiments are taken into account. The results are grouped according to the different versions of the driver model. Lastly, in section \ref{sec:centeredness} the progression of the mean lane centeredness is shown for an increasing number of searches.
 
-% TODO: New scores for baseline as it cannot be perfect 999 if it was true that the agent sometimes has to take suboptimal actions in order to receive more reward in the long run. THis is quite important because otherwise a discount horizon of 1 would be fully sufficient
-
-% TODO: Add: The agent can only recognize a state change of the driver after the driver has performed the first action in this state. This is because there are no observable clues about the duration of the driver's attentiveness and distraction.
-
-% TODO: Add time after which terminal states occur. Generally, a little more data on terminal states would be good probably.
-
 \section{Lower and upper performance bound}
 \label{sec:perf_bounds}
-
-%TODO: Mention that we choose a challenging task. Usually distracted drivers don't get off the road within seconds ^^
 
 The benchmark for the performance of the agents is the performance of the driver without assistance system as the lower bound, and the performance of an agent that always reacts optimally to the driver's actions as the upper bound. For both baselines, 50 runs with up to 1,000 actions each, if no terminal state is reached earlier, are performed for each of the three driver models. 
 
@@ -29,6 +21,7 @@ Hyperparameter optimization is performed for agents with all three action config
 
 \input{sections/plots/grid_plot}
 
+\noindent
 For the agent with a full, unweighted action space, two combinations lead to a sufficiently higher average cumulative reward than the others: The combination of a search horizon of 5 actions with an exploration constant of 0.75 leads to a reward of 587.67, and the combination of planning ten actions ahead with an exploration constant of 5 results in a reward of 581.40. The shallower the search horizon, the less planning time is needed at every planning step as fewer actions need to be simulated. Thus, at the same performance, a lower search horizon is preferable. The combination of a search horizon of 5 actions and an exploration constant of 0.75 is used for further experiments.
 
 In the case of the agent restricted to using a subset of the action space, the combination of a search horizon of 5 actions and an exploration constant of 25 yields the highest average cumulative reward of 646.83. Only the combination of a search horizon of 25 actions with an exploration constant of 1.5 comes relatively close with a reward of 616.47. As a lower search horizon is preferable, the setup for the further evaluation for this agent is a search horizon of 5 actions with an exploration constant of 25. 
@@ -37,12 +30,6 @@ The best combination of search horizon and exploration constant for the agent wi
 
 \section{Performance impact of the number of searches during planning}
 \label{sec:convergence}
-
-% TODO: Rename to something better?
-
-
-% TODO: Add planning time
-
 
 We want to determine after how many searches during planning the lane-keeping performance of the three evaluated agents converges. Performing more searches means evaluating more possible scenarios. In turn, more evaluated scenarios enable the agents to form better policies. However, after some number of searches, the information gain from additional searches decreases, and performance is expected to converge \parencite{pomcp}. We evaluate each of the agents in the scenarios with the simple driver model, the driver model with steering overcorrection after regaining attentiveness, and the driver with overcorrection and noise. A lower number of searches is preferable as each search requires a substantial amount of planning time. The applicability of a planner is limited by the planning time required for good results. Thus, knowing after how many searches the performance converges, and therefore being able to choose the minimal number of searches to perform for a good result, is critical. 
 
@@ -91,12 +78,8 @@ Table~\ref{tab:noise_terminal} shows the number of terminal states reached durin
 
 \input{sections/tables/terminal_noise}
 
-% TODO: Add plot with all three results for the noise scenario for comparison?
-
 \section{Mean lane centeredness}
 \label{sec:centeredness}
-
-% TODO: Add ground thuth (lane centeredness of the optimal strategy)
 
 The reward reflects how well the agents manage to keep the car centered in the lane and angled to the road trajectory. From the last section, it is clear that the number of simulations has a strong impact on the agents' performance. However, the last section only showcased this based on the average cumulative rewards and terminal states reached. In this section, we want to emphasize the difference in lane centeredness that stems from using more searches during planning. More specifically, we consider the mean absolute lane centeredness, which is the average distance to the lane center, regardless of whether the deviation is on the left or right side.
 
@@ -104,21 +87,7 @@ For the experiment with the driver model with driver action noise and steering o
 
 With just 200 searches, most runs end in terminal states. What is striking is that the average lane centeredness is quite volatile and often drifts off into the extreme. Neither of the three agents is consistently capable of keeping the car centered in the lane. The graph for 500 searches already suggests an improvement. There are less extreme values, and the standard errors are lower. The agents with unweighted actions appear to perform better than the agent with preferred actions at first glance. However, still, almost all runs of the two agents with unweighted actions lead to terminal states, and only about half of the runs of the agent with preferred actions. The performance of the agent with preferred actions is arguably better. Using 1,000 searches marks the start of convergence for the agent with preferred actions. The average lane centeredness is consistently lower than with 500 searches throughout the experiment. The agent using a reduced set of actions performs better than with 500 searches, leading to less variation in the lane centeredness and fewer terminal states reached during the experiment. The lane centering of the agent with the full action range is virtually unchanged. When 10,000 searches are performed during planning, all agents have converged to their peak performance. The two agents using unweighted actions agents achieve similar results in this case. The agent with preferred actions slightly outperforms the others but appears to have a higher variance in its lane centeredness.
 
-
-% TODO:
-% angular jerkiness
-% The angular jerkiness is defined as the standard deviation in the change in steering action.
-% mean road angle
-
 \input{sections/plots/lane_center_plot_2}
-
-% \section{Preservation of autonomy for an attentive driver}
-% \label{sec:autonomy}
-
-% The 
-
-% \input{sections/tables/driver_autonomy}
-
 
 
 

@@ -17,6 +17,10 @@
 \let\endtheglossary\relax
 \usepackage[acronym, toc, nohypertypes={acronym}]{glossaries}
 
+% \makeglossaries
+\makenoidxglossaries
+\input{glossary.tex}
+
 \usepackage{tikz}
 \usetikzlibrary{external}
 \tikzexternalize[prefix=figures/]
@@ -38,11 +42,8 @@
 
 \usepackage{pgf}
 
-\makeglossaries
-\input{glossary.tex}
-
 \author{Jokke Mats Jansen}
-\title{Master's Thesis}
+\title{Title placeholder}
 %\subtitle{Optional Subtitle}
 \department{Artificial Intelligence}
 \faculty{Faculty of Science}
@@ -73,7 +74,8 @@
     \microtypesetup{protrusion = true}
     
     % \clearpage
-    \printglossary[type=\acronymtype]
+    \printglossary[type=acronym]
+    \printnoidxglossary[type=\acronymtype,title=Acronyms]
     
     \mainmatter         % Folios in Arabic numerals, numbered chapters.
 

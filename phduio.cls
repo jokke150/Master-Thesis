@@ -131,13 +131,12 @@
             \vskip-\lastskip
             \vskip16mm
 
-            % TODO uncomment
-            % \resizebox{\textwidth}{!}
-            % {%
-            %     \bfseries
-            %     \phduio@thesis\
-            %     submitted for the degree of Master of Science
-            % }
+            \resizebox{\textwidth}{!}
+            {%
+                \bfseries
+                \phduio@thesis\
+                submitted for the degree of Master of Science
+            }
 
             \AND
 
@@ -290,16 +289,16 @@
 \addtolength{\cftsubparagraphindent}{5em}
 \renewcommand{\cftchapteraftersnumb}{\bfseries\boldmath}
 
-\renewcommand{\cftpartfont}[1]{\bfseries\boldmath\sffamily #1}
-\renewcommand{\cftpartpagefont}{\sffamily}
-\renewcommand{\cftchapterfont}[1]{\bfseries\boldmath\sffamily #1}
-\renewcommand{\cftchapterpagefont}{\sffamily}
-\renewcommand\cftsectionfont[1]{\sffamily\small #1}
-\renewcommand\cftsectionpagefont{\sffamily\small}
-\renewcommand\cftsubsectionfont[1]{\sffamily\small #1}
-\renewcommand\cftsubsectionpagefont{\sffamily\small}
-\renewcommand\cftsubsubsectionfont[1]{\sffamily\small #1}
-\renewcommand\cftsubsubsectionpagefont{\sffamily\small}
+% \renewcommand{\cftpartfont}[1]{\bfseries\boldmath\sffamily #1}
+% \renewcommand{\cftpartpagefont}{\sffamily}
+% \renewcommand{\cftchapterfont}[1]{\bfseries\boldmath\sffamily #1}
+% \renewcommand{\cftchapterpagefont}{\sffamily}
+% \renewcommand\cftsectionfont[1]{\sffamily\small #1}
+% \renewcommand\cftsectionpagefont{\sffamily\small}
+% \renewcommand\cftsubsectionfont[1]{\sffamily\small #1}
+% \renewcommand\cftsubsectionpagefont{\sffamily\small}
+% \renewcommand\cftsubsubsectionfont[1]{\sffamily\small #1}
+% \renewcommand\cftsubsubsectionpagefont{\sffamily\small}
 
 %% Running header and footer
 \makepagestyle{phduio}
