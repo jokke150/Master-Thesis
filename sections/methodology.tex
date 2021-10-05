@@ -7,10 +7,6 @@ This chapter formally defines the POMDP used to model the shared-control lane-ke
 
 The problem addressed in this thesis is an assisted driving lane-keeping task, where a human driver shares control with an agent over a car. The driver and the agent cooperatively control the steering wheel. The goal is to keep the car centered in its lane. Both the agent and the driver have only lateral control; the car's speed is fixed. The driver can be attentive or distracted and alternates between the two states. The general assumption is that an attentive driver shows (nearly) optimal steering behavior, while a distracted driver steers suboptimally and needs assistance. The agent, however, cannot observe whether the driver is attentive or not. To fulfill the goal of consistently keeping the car centered in the lane, the agent has to effectively estimate the driver's state of attentiveness according to the information it receives over time. Based on its estimate, the agent determines what actions the driver is likely going to take. It can then plan ahead and select adequate steering actions.
 
-%%%%
-% TODO: Add arc between Global state and driver's action model
-%%%%
-
 \begin{figure}[htbp]
     \centerfloat
     \includegraphics[width=1.0\textwidth]{figures/Components.pdf}
@@ -46,10 +42,8 @@ In this study, the driver is simulated using a stochastic driver model, instead 
 
 Three different driver model configurations with increasingly complex dynamics are used in the experiments:
 \begin{enumerate}
-    \item \textbf{Simple driver model:} The simplest model steers optimally when the driver is attentive. If it is in a distracted state, the model repeats the last attentive steering action until the driver regains her attentiveness. A distracted driver's ability to notice changes in the course of the road is limited because of a reduced situational awareness, and therefore she does not adjust to road changes like an attentive driver would (\cite{driver-awareness}; \cite{driver-awareness2}).
-    
-    % TODO: ADD citation
-    \item \textbf{Steering overcorrection:} When a distracted driver diverts strongly from the lane center and then becomes attentive again, the driver could get startled. Our assumption is that in this case, the driver would perform an overly strong steering correction during her first attentive action and thereby overshoot. We implemented this in a second, more complex model. The first action of a driver that regains attentiveness is increased by a random amount between 10 and 25 percent. The randomness makes the model less predictable when the driver becomes attentive again.
+    \item \textbf{Simple driver model:} The simplest model steers optimally when the driver is attentive. If it is in a distracted state, the model repeats the last attentive steering action until the driver regains her attentiveness. A distracted driver's ability to notice changes in the course of the road is limited because of reduced situational awareness, and therefore she does not adjust to road changes like an attentive driver would (\cite{driver-awareness}; \cite{driver-awareness2}).
+    \item \textbf{Steering overcorrection:} When a distracted driver diverts strongly from the lane center and then becomes attentive again, the driver suddenly notices the deviation. In this case, drivers tend to perform an overly strong steering correction and overshoot \parencite{oversteering-motivation}. We implemented this behavior in a second, more complex model. The first action of a driver that regains attentiveness is increased by a random amount between 10 and 25 percent. The randomness makes the model less predictable when the driver becomes attentive again.
     \item \textbf{Steering overcorrection and noise:} The last, most complex scenario introduces action noise. A random noise between five and 20 percent is added to every action the driver takes. The action can thereby become five to 20 percent stronger or weaker. The overcorrection for the first action after regaining attentiveness, introduced in the last model, is performed as well. The noise is added on top. The noise makes the driver less predictable in every situation.
 \end{enumerate}
 
@@ -66,12 +60,12 @@ The overall state space $S$ consists of all possible states of the agent's envir
 \subsubsection*{Car state}
 \label{sec:state}
 
-TORCS data model for the car state is too extensive to list here in full\footnote{See \emph{tCar} struct in the \href{https://sourceforge.net/projects/torcs/files/api-docs/}{TORCS API documentation}}. table \ref{tab:state} shows the most important attributes. These include the car's position on the track, its current velocity, and its acceleration. Among others, there are additional attributes for the state of transmission and engine, the friction and spin of the wheels, and aerodynamic influences such as drag and lift. The values in the state are continuous. 
+TORCS data model for the car state is too extensive to list here in full\footnote{See \emph{tCar} struct in the \href{https://sourceforge.net/projects/torcs/files/api-docs/}{TORCS API documentation}}. Table \ref{tab:state} shows the most important attributes. These include the car's position on the track, its current velocity, and its acceleration. Among others, there are additional attributes for the state of transmission and engine, the friction and spin of the wheels, and aerodynamic influences such as drag and lift. The values in the state are continuous. 
 
 \input{sections/tables/state.tex}
 
 \noindent
-The lateral position (lane centeredness) and the yaw angle of the car are illustrated in figure \ref{fig:observations}. The lane centeredness of the car is defined over a continuous interval of $(-\infty,\infty)$, with values in between -1 (right lane border) and +1 (left lane border) denoting that the car is within its lane, and everyting beyond standing for an off-track position. A value of zero means the car is centered in its lane. The car's relative yaw angle is given with respect to the track direction and defined over an interval of $[-\pi, +\pi]$ radians. A value of zero indicates that the car is heading in the same position as the track.
+The lateral position (lane centeredness) and the yaw angle of the car are illustrated in figure \ref{fig:observations}. The lane centeredness of the car is defined over a continuous interval of $(-\infty,\infty)$, with values in between -1 (right lane border) and +1 (left lane border) denoting that the car is within its lane, and everything beyond standing for an off-track position. A value of zero means the car is centered in its lane. The car's relative yaw angle is given with respect to the track direction and defined over an interval of $[-\pi, +\pi]$ radians. A value of zero indicates that the car is heading in the same position as the track.
 
 \begin{figure}[htbp]
     \includegraphics[width=0.6\linewidth]{figures/angle_distance.pdf}
@@ -87,20 +81,27 @@ The driver state consists of two variables: The current state (attentive or dist
 \subsection{Actions}
 \label{sec:actions}
 
-% TODO: Illustrate action to steering angle mappings 
-
 The action space $A$ consists of all steering actions \emph{the agent} can perform. In the experiments, two different sets of actions are referred to: First, a full action set, which enables the agent to overrule and effectively reverse the driver's actions completely. Second, a reduced action set containing only moderate steering actions (reduced action space in table \ref{tab:actions}). The motivation behind this is the assumption that strong steering actions are seldomly needed while driving on a highway. Leaving them away might reduce the planning complexity.
 
-The human driver and the agent share control of the steering wheel. The steering input of the driver $a_{driver}$ and agent $a_{agent}$ are added to $a_{car} \in [-1, +1]$ using Equation~\ref{eq:steering}. A steering action of $-1$ means steering fully to the right (159 degrees), and an action of $+1$ has the effect of fully steering to the left (21 degrees). 
+The human driver and the agent share control of the steering wheel. The steering input of the driver $a_{driver}$ and agent $a_{agent}$ are added to $a_{car} \in [-1, +1]$ using Equation~\ref{eq:steering}.
 
 \begin{equation}
     a_{car} = \min(\, -1, \, \max(\, 1, \, (a_{driver} + a_{agent})\,)\,)
     \label{eq:steering}
 \end{equation}
 
+A steering action of $-1$ means steering fully to the right (159 degrees), and an action of $+1$ has the effect of fully steering to the left (21 degrees). The relationship between steering actions and steering angles is illustrated in figure~\ref{fig:steer-angle}.
+
+\begin{figure}[htbp]
+    \includegraphics[width=0.3\linewidth]{figures/steering-angle.pdf}
+    \centering
+    \caption{Mapping steering actions to steering angles}
+    \label{fig:steer-angle}
+\end{figure}
+
 \vspace{1em}
 \noindent
-table \ref{tab:actions} shows the discrete actions for the driver and the agent. The discrete values have been chosen empirically. More actions allow for more precise control. However, the number of actions is the branching factor for the search tree construction during planning. Thus, it has a strong impact on the complexity of the search problem. Therefore, a compromise between precision and performance is made. Because minor actions are more likely and generally preferable in a highway driving scenario, the resolution is higher for small steering actions.
+Table \ref{tab:actions} shows the discrete actions for the driver and the agent. The discrete values have been chosen empirically. More actions allow for more precise control. However, the number of actions is the branching factor for the search tree construction during planning. Thus, it has a strong impact on the complexity of the search problem. Therefore, a compromise between precision and performance is made. Because minor actions are more likely and generally preferable in a highway driving scenario, the resolution is higher for small steering actions.
 
 If the driver is distracted while the car is in a road bend, in the most extreme situation, she could potentially steer into the opposite direction of where she needs to steer to keep the car centered in its lane. In this case, to correct the driver's incorrect action, the agent needs to be able to effectively reverse the driver's action. Therefore, the action space of the agent is extended by plus two and minus two.
 

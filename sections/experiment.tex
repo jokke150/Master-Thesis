@@ -22,7 +22,7 @@ We made a number of noteworthy experiment design decisions that are important to
 
 \subsection{Episode definition and repetitions}
 
-Every experiment consists of 50 repetitions (runs) of episodes consisting of 1000 actions each, if no terminal state is reached earlier. An episode can end prematurely if a terminal state is reached. A state is terminal if the car is off track, which is considered to be the case if the center of the car lies within more than 20 cm beside the left or right lane markings. The episodes are independent of each other - no data is persisted. Each episode starts with the same car state (centered in the lane, relative yaw angle of zero) and the same driver model state (attentive, same duration until distracted). The acceleration and braking are controlled by an external controller, keeping the speed constant at 80 km/h during the entire episode.
+Every experiment consists of 50 repetitions (runs) of episodes consisting of 1,000 actions each, if no terminal state is reached earlier. An episode can end prematurely if a terminal state is reached. A state is terminal if the car is off track, which is considered to be the case if the center of the car lies within more than 20 cm beside the left or right lane markings. The episodes are independent of each other - no data is persisted. Each episode starts with the same car state (centered in the lane, relative yaw angle of zero) and the same driver model state (attentive, same duration until distracted). The acceleration and braking are controlled by an external controller, keeping the speed constant at 80 km/h during the entire episode.
 
 \subsection{Experiments do not use real-time simulation}
 
@@ -36,7 +36,7 @@ We restrict how many searches are performed in each planning step. In the experi
 
 \subsection{Initial belief}
 
-The initial belief of the agent consists of 1000 particles that each consist of a randomly sampled attentive driver model state and a car state that is slightly modified but close to the true car state. The lane centeredness and the yaw angle of the real car state are increased or decreased by a randomly chosen amount of up to five percent. Thereby, the agent does not have perfect knowledge of the car's current lateral position but has a close initial estimate.
+The initial belief of the agent consists of 1,000 particles that each consist of a randomly sampled attentive driver model state and a car state that is slightly modified but close to the true car state. The lane centeredness and the yaw angle of the real car state are increased or decreased by a randomly chosen amount of up to five percent. Thereby, the agent does not have perfect knowledge of the car's current lateral position but has a close initial estimate.
 
 The main objective for the agent is to cope with the unpredictability of and partial information about the driver's attentiveness. The agent knows that the driver is initially attentive but not for how long. The duration until the next change of attentiveness occurs is randomly sampled but adheres to the usual dynamics of the driver model; the duration may not be larger than the maximum or smaller than the minimum defined in section \ref{sec:driver_state}.
 
@@ -57,7 +57,7 @@ Every run has a different seed for the random number generator used for the rand
 
 Besides the number of searches, there are two additional hyperparameters of POMCP that have a strong influence on the planning performance: The search horizon and the exploration constant. The exploration constant is used to enhance the value of rarely-tried actions in order to facilitate exploration and stop the agent from overfitting. The search horizon (or discount horizon) describes how many actions the agent looks into the future during planning if no terminal state is reached earlier.
 
-Six different exploration constants and three different search horizons are evaluated in a grid search for the best combination. Each combination is assessed by the average cumulative return from an experiment with 20 runs, up to 1000 actions each, and 1000 searches per planning step. The second driver model is used for the grid search (steering overcorrection, no action noise; see section \ref{sec:driver_model_config}). The grid search is only performed for this selected scenario because of limited computing and time resources. However, the experiments should be sufficient to indicate the performance differences stemming from the hyperparameter combinations.
+Six different exploration constants and three different search horizons are evaluated in a grid search for the best combination. Each combination is assessed by the average cumulative return from an experiment with 20 runs, up to 1,000 actions each, and 1,000 searches per planning step. The second driver model is used for the grid search (steering overcorrection, no action noise; see section \ref{sec:driver_model_config}). The grid search is only performed for this selected scenario because of limited computing and time resources. However, the experiments should be sufficient to indicate the performance differences stemming from the hyperparameter combinations.
 
 \section{Performance metrics}
 \label{sec:perf_metrics}
