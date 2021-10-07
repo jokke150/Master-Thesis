@@ -67,6 +67,7 @@
     \addlegendentry{Preferred actions}
 
     \addplot [solid, color=brown, no marks, each nth point=10, filter discard warning=false, unbounded coords=discard] table [y=Count, x=Average Distance, y error=Average Distance SE, col sep=comma] {data/Values/OPTIMAL optimal r50 a1000 - Optimal - 50 runs values.csv};
+    \addlegendentry{Optimal}
 
     \addplot [name path=upper1,draw=none] table [y=Count, x expr=\thisrow{Average Distance}+\thisrow{Average Distance SE}, col sep=comma] {data/Values/500 - Simulations - 50 runs - 1000 actions - discount horizon 5 - exp const 0.75 values.csv};
     \addplot [name path=lower1,draw=none] table[y=Count, x expr=\thisrow{Average Distance}-\thisrow{Average Distance SE}, col sep=comma] {data/Values/500 - Simulations - 50 runs - 1000 actions - discount horizon 5 - exp const 0.75 values.csv}; 

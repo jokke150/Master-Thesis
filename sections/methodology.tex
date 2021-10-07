@@ -155,13 +155,17 @@ The key idea of \acrfull{pomcp} is to use Monte Carlo sampling both to sample st
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=1.0\textwidth]{figures/POMCP_original.pdf}
-    \caption[A POMCP belief tree]{A POMCP belief tree with two actions and two observations. The agent simulates action-observation trajectories starting from the current belief at history h (left). The action with the highest mean return from the simulations is executed in the real environment, and the agent receives a real observation o (middle). The tree can then be pruned, as all other histories are rendered invalid. The process repeats from the new history hao (right). \emph{Illustration from: \cite{pomcp}}.}
+    \captionsetup{singlelinecheck=off}
+    \caption[A POMCP belief tree]
+    {
+        A POMCP belief tree with two actions and two observations. The agent simulates action-observation trajectories starting from the current belief at history h (left). The action with the highest mean return from the simulations is executed in the real environment, and the agent receives a real observation o (middle). The tree can then be pruned, as all other histories are rendered invalid. The process repeats from the new history hao (right).
+        \begin{flushright}\emph{Source: \cite{pomcp}}.\end{flushright}
+    }
     \label{fig:pomcp_original}
 \end{figure}
 
 % The simulator is used to generate sequences of states, observations and rewards. These simulations are used to update the value function, without ever looking inside the black box describing the model’s dynamics.
 
-\noindent
 POMCP constructs a search tree of histories (see figure \ref{fig:pomcp_original}). Sequences of states, observations, and rewards are simulated using a generative model. Given a state and action, the generative model returns a successor state, observation, and reward. The simulations allow POMCP to estimate the value of histories without knowing the exact transition dynamics of the POMDP. For each represented history, a node $T(h) = \langle N(h), V(h) \rangle$ is maintained. $N(h)$ stands for the number of times the history $h$ has been visited, while $V(h)$ stores the history's value. The value is estimated by the mean return from all searches that start at history~$h$. 
 
 The belief over the states is approximated by employing an unweighted particle filter approach. The belief is represented by a collection of states. For every history $h$ visited during searches, the belief $B(h)$ is updated to include the simulation state (particle) returned by the generative model. The more likely a state is at a history, the more often it is expected to occur in simulations. As a consequence, the relative frequency of a state in the belief approximates its probability.
@@ -173,7 +177,7 @@ The belief over the states is approximated by employing an unweighted particle f
     \label{fig:pomcp}
 \end{figure}
 
-Figure \ref{fig:pomcp} illustrates the process of POMCP (Figure \ref{fig:pomcp-code} shows the pseudocode of the algorithm). If the belief for the current history $h_{real}$ does not contain particles at the beginning of a planning episode ($B(h_{real}) = \emptyset$), the agent has lost track of the environment's state completely. If this happens, we consider the planner to have failed and select actions randomly from this point on. Otherwise, a start state for a search is sampled from the belief at the current history: $ s \sim B(h_ {real})$. 
+Figure \ref{fig:pomcp} illustrates the process of POMCP and Figure \ref{fig:pomcp-code} presents the pseudocode of the algorithm. If the belief for the current history $h_{real}$ does not contain particles at the beginning of a planning episode ($B(h_{real}) = \emptyset$), the agent has lost track of the environment's state completely. If this happens, we consider the planner to have failed and select actions randomly from this point on. Otherwise, a start state for a search is sampled from the belief at the current history: $ s \sim B(h_ {real})$. 
 
 Searches are divided into two stages. During the first stage, which is active as long as child nodes exist for all children, actions are selected using the \acrfull{ucb1} algorithm \parencite{ucb1}. UCB1 chooses actions by the principle of optimism in the face of uncertainty; the values of actions are increased with an exploration bonus that is higher for rarely tried actions (see equation \ref{eq:ucb1}, $c$ is a constant hyperparameter). 
 
@@ -182,7 +186,10 @@ Searches are divided into two stages. During the first stage, which is active as
     \label{eq:ucb1}
 \end{equation}
 
-If any history is visited for the first time, the algorithm continues in the second stage: rollout. During this stage, the agent cannot rely on previous experiences to weigh the actions. Hence, actions are selected randomly. Only for the first new history encountered during a rollout, a node is added to the tree. More histories may be simulated, but they are not included in the tree. The tree's growth is thereby limited to one level of depth per search. The main purpose of the rollout is to form a first estimation of the newly encountered history. After every search, the values at all nodes encountered during the search are updated by backpropagating the rewards through the tree.
+If any history is visited for the first time, the algorithm continues in the second stage: rollout. During this stage, the agent cannot rely on previous experiences to weigh the actions. Hence, actions are selected using a pre-defined rollout strategy $\pi_{rollout}$. We use uniformly random action selection during the rollout phase, if no preferred actions are applied (see section \ref{sec:preferred_actions}). First, all action nodes are initialized with initial counts $N_{init}$ and initial values $V_{init}$. These are usually zero unless preferred actions are
+used.
+
+Only for the first new history encountered during a rollout, a node is added to the tree. More histories may be simulated, but they are not included in the tree. The tree's growth is thereby limited to one level of depth per search. The main purpose of the rollout is to form a first estimation of the newly encountered history. After every search, the values at all nodes encountered during the search are updated by backpropagating the rewards through the tree.
 
 To select which action to perform in the real environment, a fixed number of searches is performed from the current history. After all searches are complete, the action $a_{best}$ with the highest value at the current history $h_{real}$ is returned. After this action is executed in the real environment, with an observation $o_{last}$, the tree can be pruned. Only the nodes from history $h_{real}a_{best}o_{last}$ onward stay relevant as all other histories are rendered impossible (see figure \ref{fig:pomcp_original}). Then, the process repeats from the new history.
 
@@ -191,13 +198,11 @@ The number of searches performed during the planning has a substantial impact on
 \begin{figure}[htbp]
     \centerfloat
     \includegraphics[width=1.0\textwidth]{figures/pomcp_alg_crop.pdf}
-    \caption[Original pseudocode for POMCP algorithm]{Pseudocode for the POMCP algorithm. \emph{Source: \cite{pomcp}}.
-    \\
-    \emph{Notes: }
-    \begin{itemize}
-        \item A
-        \item B
-    \end{itemize}
+    \captionsetup{singlelinecheck=off}
+    \caption[Original pseudocode for POMCP algorithm]
+    {
+        Pseudocode for the POMCP algorithm. \emph{Note: Instead of a time limit for the search procedure, we stop after a predefined number of searches have been performed.}
+        \begin{flushright}\emph{Source: \cite{pomcp}}.\end{flushright}
     }
     \label{fig:pomcp-code}
 \end{figure}
@@ -221,19 +226,41 @@ The action space is discretized as outlined before in section \ref{sec:actions} 
 
 Particle filter approaches, POMCP included, can fail due to a phenomenon called particle deprivation. Because of the random nature of the process, the belief sometimes converges towards a state that is far from the environment's true state. Particles that differ from the converged state have a low probability while sampling (low relative count). Hence, after every iteration, they become scarcer until they are completely erased from the belief. At this point, the agent is sure to be in an erroneous state and cannot recover anymore. Particle injection (also called particle reinvigoration) is a method to counteract this problem by introducing a number of random particles to the belief at each iteration \parencite{decision_making_book}. While this reduces the accuracy of the belief, it prevents its complete convergence towards a wrong state. 
 
-Thus, particle injection is used to increase the variance of the belief about the driver model state. Only observable information is used. Concretely, particle injection is implemented by adding driver model states with a random number of remaining actions and the same action as the one that was last observed. The number of remaining actions can be lower than the minimum defined in section~\ref{sec:driver_model} because this limit is only intended for initial sampling, and the true remaining number of driver actions in a particular state might be lower after having performed actions already. Like in the original POMCP paper \parencite{pomcp}, the number of transformed particles added before each planning step is $1/16$ of the number of searches. The particles can be added during policy execution, and therefore, do not influence planning time.
+Thus, particle injection is used to increase the variance of the belief about the driver model state. Figure \ref{fig:code-part-inj} showcases the pseudocode for our concrete implementation of particle injection. We sample states from the belief, transform them and inject the transformed states into the belief. 
+
+The transformation only adapts the attentiveness of the driver and the number of remaining actions until the driver's attentiveness changes. The car state and the driver's last action stay unchanged. The attentiveness and the number of remaining actions (duration for the current state) are randomly chosen. The duration can be lower than the minimum defined in section~\ref{sec:driver_model} because the true remaining number of driver actions in a particular state might be lower after having performed actions already. Like in the original POMCP paper \parencite{pomcp}, the number of transformed particles added before each planning step is $1/16$ of the number of searches. The particles can be injected during policy execution, and therefore, do not influence the planning time.
+
+\begin{figure}[htbp]
+\lstset{basicstyle=\rmfamily\footnotesize,breaklines=true}
+\begin{lstlisting}[mathescape=true]
+$\textbf{procedure}$  $InjectParticles$()
+    injections $\leftarrow$ 0
+    $\textbf{repeat}$
+        origState $\sim$ $B(h)$
+        transformedState $\leftarrow$ $Copy$(origState)
+        transformedState.driver.distracted $\leftarrow$ $Random$(true, false)
+        transformedState.driver.duration $\leftarrow$ $Random$(0, maxDuration)
+        $B(h)$ $\cup$ transformedState
+        injections$++$
+    $\textbf{until}$ injections == numSearches / 16
+$\textbf{end procedure}$
+\end{lstlisting}
+\caption[Pseudocode for the particle injection]{Pseudocode for the particle injection. \emph{Note: Only the driver distraction and duration for the current state are changed in the transformed state. The car state and the driver's last action are copied.}}
+\label{fig:code-part-inj}
+\end{figure}
 
 
 \subsection{Preferred actions}
 \label{sec:preferred_actions}
 
-Domain knowledge narrowly
-focuses the search on promising states without altering asymptotic convergence.
+\cite{pomcp} improve the performance of POMCP by providing domain knowledge in the form of preferred actions to the agent. Domain knowledge allows the agent to focus on promising states without altering the aglorithm's performance behavior \parencite{pomcp}. Preferred actions are initialized with an initial value $V_{init}$, increasing the likelihood to be selected by the UCB1 algorithm. Moreover, the rollout strategy $\pi_{rollout}$ can be changed from uniformly random action selection to a more informed method. Refer to figure \ref{fig:pomcp-code} to see how changing $V_{init}$ and $\pi_{rollout}$ integrates into the algorithm.
 
-\cite{pomcp} improve the performance of POMCP by providing domain knowledge in the form of preferred actions to the agent. Preferred actions are initialized with an initial value, increasing the likelihood to be selected by the UCB1 algorithm. For example, \cite{pomcp} implemented preferred actions for the game Pac-Man, where the player is chased by ghosts in a maze who aim to catch and eat her. By collecting a \emph{power pill}, the player is enabled to eat the ghosts instead. When using preferred actions, the value of moving in directions in which the player sees ghosts is based on the power pill. If the player collected one, the value of moving towards ghosts is increased, if not, it is decreased. Thereby, the agent is made aware of basic domain knowledge, and its performance is increased.
+For example, \cite{pomcp} implemented preferred actions for the game Pac-Man, where the player is chased by ghosts in a maze who aim to catch and eat her. By collecting a \emph{power pill}, the player is enabled to eat the ghosts instead. When using preferred actions, the value of moving in directions in which the player sees ghosts is based on the power pill. If the player collected one, the value of moving towards ghosts is increased, if not, it is decreased. Thereby, the agent is made aware of basic domain knowledge, and its performance is increased.
 
 In the case of the lane-keeping scenario on a highway, one thing to consider is that strong steering actions are seldomly needed. Strong actions should only be needed as a countermeasure when a distracted driver turns strongly in the wrong direction. The idea is to make minor actions more likely to be chosen during searches by giving them a higher initial value than stronger actions. Thereby, less-severe steering actions are selected and tried out first by the UCB1 algorithm. If they lead to good results, the agent can exploit them quicker. If not, the agent will also evaluate less preferred actions. 
 
-We employ preferred actions to evaluate their effect on the performance of the agent. The design we use was empirically chosen and is not meant to provide a fully correct representation of driving domain knowledge. The initial value for all actions is set to  $ v_{init}(a) = 0.9 + 0.1 * Pr(a)$. The action selection probabilities during the rollout phase and the action's initial values are shown in table \ref{tab:pref_actions}. The initial count is set to zero for all actions.
+We employ preferred actions to evaluate their effect on the performance of the agent. The design we use was empirically chosen and is not meant to provide a fully correct representation of driving domain knowledge. Instead of choosing actions uniformly random during rollouts, we use the probabilities shown in table \ref{tab:pref_actions} for the action selection by the rollout strategy $\pi_{rollout}$. Thereby, we favor minor steering actions over strong actions. The initial count $N_{init}$ is set to zero for all actions. The initial value for all actions is set to  $V_{init}$:
+
+$$V_{init}(a) = 0.9 + 0.1 * Pr(a)$$
 
 \input{sections/tables/pref_action_prob.tex}
