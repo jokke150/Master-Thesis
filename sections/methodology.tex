@@ -150,7 +150,7 @@ The state transition probabilities $T$ and the Observation probabilities $Z$ are
 \subsection{Solving procedure of POMCP}
 \label{sec:pomcp}
 
-The key idea of \acrfull{pomcp} is to use Monte Carlo sampling both to sample start states from the belief and to sample histories using a generative model \parencite{pomcp}. Thereby, the curse of dimensionality and the curse of history are \emph{broken} (see section \ref{sec:curses}). POMCP is an anytime, online solver. For an online solver, policy computation (planning) and execution (acting) are intertwined. An anytime algorithm builds the solution incrementally. It can be stopped at any time and there will be a solution, albeit the solution might not be very good if the algorithm is stopped early.
+The key idea of \acrfull{pomcp} is to use Monte Carlo sampling both to sample start states from the belief and to sample histories using a generative model \parencite{pomcp}. Thereby, the curse of dimensionality and the curse of history are \emph{broken} (see section \ref{sec:curses}). POMCP is an anytime, online solver. For an online solver, policy computation (planning) and execution (acting) are intertwined. An anytime algorithm builds the solution incrementally. It can be stopped at any time, and there will be a solution, albeit the solution might not be very good if the algorithm is stopped early.
 
 \begin{figure}[htbp]
     \centering
@@ -173,7 +173,7 @@ The belief over the states is approximated by employing an unweighted particle f
     \label{fig:pomcp}
 \end{figure}
 
-Figure \ref{fig:pomcp} illustrates the process of POMCP.  If the belief for the current history $h_{real}$ does not contain particles at the beginning of a planning episode ($B(h_{real}) = \emptyset$), the agent has lost track of the environment's state completely. If this happens, we consider the planner to have failed and select actions randomly from this point on. Otherwise, a start state for a search is sampled from the belief at the current history: $ s \sim B(h_ {real})$. 
+Figure \ref{fig:pomcp} illustrates the process of POMCP (Figure \ref{fig:pomcp-code} shows the pseudocode of the algorithm). If the belief for the current history $h_{real}$ does not contain particles at the beginning of a planning episode ($B(h_{real}) = \emptyset$), the agent has lost track of the environment's state completely. If this happens, we consider the planner to have failed and select actions randomly from this point on. Otherwise, a start state for a search is sampled from the belief at the current history: $ s \sim B(h_ {real})$. 
 
 Searches are divided into two stages. During the first stage, which is active as long as child nodes exist for all children, actions are selected using the \acrfull{ucb1} algorithm \parencite{ucb1}. UCB1 chooses actions by the principle of optimism in the face of uncertainty; the values of actions are increased with an exploration bonus that is higher for rarely tried actions (see equation \ref{eq:ucb1}, $c$ is a constant hyperparameter). 
 
@@ -187,6 +187,20 @@ If any history is visited for the first time, the algorithm continues in the sec
 To select which action to perform in the real environment, a fixed number of searches is performed from the current history. After all searches are complete, the action $a_{best}$ with the highest value at the current history $h_{real}$ is returned. After this action is executed in the real environment, with an observation $o_{last}$, the tree can be pruned. Only the nodes from history $h_{real}a_{best}o_{last}$ onward stay relevant as all other histories are rendered impossible (see figure \ref{fig:pomcp_original}). Then, the process repeats from the new history.
 
 The number of searches performed during the planning has a substantial impact on the quality of the derived policy. Unfortunately, the computational complexity is exponential with respect to the number of performed searches. However, for a good policy, only a finite number of searches are required. The performance is expected to increase with the number of searches only until convergence occurs \parencite{pomcp}.
+
+\begin{figure}[htbp]
+    \centerfloat
+    \includegraphics[width=1.0\textwidth]{figures/pomcp_alg_crop.pdf}
+    \caption[Original pseudocode for POMCP algorithm]{Pseudocode for the POMCP algorithm. \emph{Source: \cite{pomcp}}.
+    \\
+    \emph{Notes: }
+    \begin{itemize}
+        \item A
+        \item B
+    \end{itemize}
+    }
+    \label{fig:pomcp-code}
+\end{figure}
 
 \subsection{Action and observation space discretization}
 \label{sec:discretization}
