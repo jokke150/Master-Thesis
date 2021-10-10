@@ -76,7 +76,7 @@ The lateral position (lane centeredness) and the yaw angle of the car are illust
 
 \subsubsection*{Driver state}
 \label{sec:driver_state}
-The driver state consists of two variables: The current state (attentive or distracted) and the duration it remains in this current state. The duration it remains in a state is randomly chosen but lies between one second (10 actions) and 5 seconds (50 actions). When the time runs out for the current state, the state reverses; an attentive driver becomes distracted, and a distracted driver regains attentiveness. The duration for the next state is randomly chosen again. The process repeats until the experiment is over.
+The driver state consists of three variables: The current attentiveness (attentive or distracted), the remaining duration the driver stays attentive or distracted, and the driver's last performed action. The duration the driver remains attentive or distracted is randomly chosen but lies between one second (10 actions) and 5 seconds (50 actions). When the time runs out, an attentive driver becomes distracted, and a distracted driver regains attentiveness. The duration for the next state is then randomly chosen again. The process repeats until the experiment is over.
 
 \subsection{Actions}
 \label{sec:actions}

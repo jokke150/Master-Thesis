@@ -1,15 +1,10 @@
 \chapter{Conclusion and future outlook}
 \label{ch:conclusion}
 
-% reviews the challenges, insights, and constributions
 This chapter concludes the study of this thesis about distraction-aware lane-keeping assistance with a human in the loop. Section \ref{sec:conclusion} presents the conclusions of this thesis. Section \ref{sec:future} outlines the necessary adaptations required to apply our approach with a more complex driver model or a human driver.
 
 \section{Conclusion}
 \label{sec:conclusion}
-
-% Main challenge 
-
-% Has it been successful?
 
 In this thesis, an agent acting as a lane-keeping assistance system is conceived that estimates the driver's distraction online, sharing control over the car with the driver. The agent does not observe whether the driver is attentive or distracted. For its assessment of the driver's distraction, the agent relies solely on observations about driving performance measures, such as the steering actions of the driver, and sensory information about the position of the car. The problem is modeled as a POMDP to account for the uncertainty about the driver's distraction and the exact positon of the car. The POMCP algorithm \parencite{pomcp} is applied to solve the POMDP online. To the best of our knowledge, this is the first work that applies online POMDP solving to address the uncertainty about a driver's distraction in a shared control lane-keeping scenario while relying only on commonly available measures as observations.
 
@@ -22,29 +17,9 @@ The main conclusions of this thesis can be summarized as follows:
     \item We enable an agent to act as a lane-keeping assistant to the driver, taking into account the driver's potential distraction. The POMDP is solved online by applying the POMCP algorithm. Experimental results show that the driving performance is enhanced.
     \item Particle deprivation is a common problem with a particle filter approach such as POMCP. Implementing particle injection (see section \ref{sec:particle_deprivation}) and introducing domain knowledge by the use of preferred actions (see section \ref{sec:preferred_actions}) leads to an improvement.
     \item Using the TORCS driving simulator as a generative model during planning with POMCP is not efficient enough for a real-time scenario. The performance needs to be significantly optimized. Suggestions on how to achieve this are provided in section \ref{sec:perf_opt}.
-    \item The lane-keeping performance of our approach is inferior to traditional lane-keeping assistance systems. The autonomy of the driver is not significantly increased by estimating the driver's distraction. The immediate application of the approach is not advisable. Section \ref{sec:future} outlines opportunities for improvement.
+    \item The lane-keeping performance of our approach is inferior to traditional lane-keeping assistance systems. The immediate application of the approach is not advisable. Section \ref{sec:future} outlines opportunities for improvement.
     \item Our simulation method allows for a repetition of experiments. Problems can be revisited and analyzed. This is important in the safety-critical domain of automated driving.
 \end{enumerate}
-
-%%%%%%
-% Research questions
-
-% How can a lane-keeping scenario with shared control between a potentially distracted human driver and an agent be modeled using a POMDP?
-
-% Can the agent estimate the driver's distraction using driver performance measures alone, allowing it to take appropriate actions when the driver becomes distracted?
-
-% Is the solution approach viable for a real-world scenario, and if not, what limitations are there, and what are potential methods to solve them?
-
-
-
-
-% The agent should have access to the full action space. Otherwise, it is not prepared for some situations.
-
-%%%%
-% Agent acts while driver is attentive and acting optimally
-
-% Add penalty to reward to reduce the occurences of intervening while the driver is attentive?
-% Additional clues about the driver's attentiveness are needed. 
 
 \section{Road toward application with human drivers}
 \label{sec:future}
@@ -88,16 +63,7 @@ Various solvers have been developed to work with fully continuous POMDP. Two alg
 Human drivers likely react to the actions of the agent, with potentially different reaction times or behavior for distracted drivers. The driver models used in our experiments did not account for this. \cite{att_intersec} show that actively probing human drivers can reduce the uncertainty about their mental state. Enabling the agent to gather information about the human by actively probing her might help to improve the agent's performance. In a scenario with a human driver, the internal state of the human is very complex and therefore hard to estimate. Active probing, such as intentional small steering actions, even if they are not necessary, could be used to gauge the state of the driver more accurately.
 
 %%%%%%
-% Step further: Active probing 
-% Although efficient, these approximations sacrifice animportant aspect of POMDPs: the ability toactively gatherinformation.
-
-% Intersection, probing other cars: \cite{att_intersec}
-% Planning for cars that coordinate with people: leveraging effects onhuman actions for planning and active information gathering overhuman internal state
-% Information Gathering Actions over Human Internal State
-% -> Our key insight is that robots can leverage their own actions to help estimation of human internalstate.\
-
-%%%%%%
-% Step further: Bi-directional feedbackk
+% Step further: Bi-directional feedback
 
 % \cite{hitl_pomdp} uses feedback
 % Sharing Control With Haptics: Seamless Driver Support From Manual to Automatic Control
