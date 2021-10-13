@@ -113,7 +113,7 @@
                 \Huge
                 \bfseries
                 \boldmath
-                \thetitle
+                \phduio@maintitle
                 \par
             }
 
@@ -542,6 +542,10 @@
 {
     \includegraphics[height = 1.5ex]{figures/phduio-colon}\,%
 }
+
+%% Main title (exlcuding subtitle)
+\newcommand{\maintitle}[1]{ \def \phduio@maintitle{#1} }
+\maintitle{}
 
 %% Subtitle
 \newcommand{\subtitle}[1]{ \def \phduio@subtitle{#1} }
