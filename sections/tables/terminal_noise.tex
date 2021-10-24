@@ -6,11 +6,11 @@
     \begin{tabular}{@{}llccccccccccccc@{}}
         \toprule
         \multicolumn{2}{@{}l@{}}{Number of searches}                                             & 10  & 100 & 200 & 300 & 400 & 500 & 750  & 1000 & 1500 & 2500 & 5000 & 7500  & 10000 \\ \midrule
-        \multirow{2}{*}{\begin{tabular}[c]{@{}l@{}}All\\ actions\end{tabular}}   & \# term. states   & 50  & 50  & 22  & 4   & 4   & 3   & 3    & 1    & 0    & 1    & 4    & 6     & 1     \\
+        \multirow{2}{*}{\begin{tabular}[c]{@{}l@{}}All\\ actions\end{tabular}}   & \# term. states   & 50 & 50  & 50  & 44  & 42  & 40  & 40  & 40   & 30   & 15   & 4    & 6    & 5     \\
         & $\varnothing$ plan. time (s) & .02 & .05 & .09 & .12 & .16 & .21 & .29  & .37  & .55  & .92  & 1.78 & 2.73  & 3.01  \\ \midrule
-        \multirow{2}{*}{\begin{tabular}[c]{@{}l@{}}Action\\ subset\end{tabular}} & \# term. states   & 50  & 48  & 27  & 26  & 11  & 18  & 6    & 5    & 0    & 2    & 0    & 2     & 2     \\
+        \multirow{2}{*}{\begin{tabular}[c]{@{}l@{}}Action\\ subset\end{tabular}} & \# term. states   & 50 & 50  & 49  & 47  & 46  & 47  & 37  & 35   & 25   & 14   & 5    & 1    & 1     \\
         & $\varnothing$ plan. time (s) & .02 & .06 & .09 & .12 & .17 & .19 & .28  & .38  & .55  & .89  & 1.80 & 2.69  & 3.61  \\ \midrule
-        \multirow{2}{*}{\begin{tabular}[c]{@{}l@{}}Pref.\\ actions\end{tabular}} & \# term. states   & 50  & 50  & 32  & 13  & 8   & 4   & 1    & 3    & 0    & 0    & 1    & 0     & 0     \\
+        \multirow{2}{*}{\begin{tabular}[c]{@{}l@{}}Pref.\\ actions\end{tabular}} & \# term. states   & 50 & 50  & 48  & 43  & 37  & 26  & 20  & 1    & 0    & 0    & 3    & 0    & 0     \\
         & $\varnothing$ plan. time (s) & .12 & .24 & .39 & .55 & .68 & .84 & 1.25 & 1.66 & 2.53 & 4.20 & 9.13 & 16.66 & 22.21 \\ \bottomrule
     \end{tabular}
     \caption[Number of terminal runs and average planning time for all experiments with the driver model with steering over correction and noise]{For each of the experiments with the driver model with steering over correction and noise, this table includes the total number of runs during which a terminal state was reached and the average planning time per planning step in seconds. \emph{Note: .xx is short for 0.xx in the table.}}
